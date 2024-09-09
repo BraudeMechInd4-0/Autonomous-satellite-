@@ -1,0 +1,39 @@
+import numpy as np
+import matplotlib.pyplot as plt
+from sympy import symbols, integrate, factorial, Rational
+
+def adams_bashforth_coefficients(order):
+    """Compute the coefficients for Adams-Bashforth methods up to the specified order."""
+    coefficients = []
+    x = symbols('x')
+    for n in range(1, order + 1):
+        row_coeffs = []
+        for j in range(n):
+            expr = x
+            for i in range(n):
+                if i != j:
+                    expr *= (x + i)
+            expr /= x
+            coeff = integrate(expr, (x, 0, 1))
+            coeff *= Rational((-1)**j, (factorial(j) * factorial(n - j - 1)))
+            row_coeffs.append(coeff)
+        coefficients.append(row_coeffs)
+    return coefficients
+
+def adams_moulton_coefficients(order):
+    """Compute the coefficients for Adams-Moulton methods up to the specified order."""
+    coefficients = []
+    x = symbols('x')
+    for n in range(1, order + 1):
+        row_coeffs = []
+        for j in range(n):
+            expr = x
+            for i in range(n):
+                if i != j:
+                    expr *= (x + i)
+            expr /= x
+            coeff = integrate(expr, (x, 0, 1))
+            coeff *= Rational((-1)**j, (factorial(j) * factorial(n - j)))
+            row_coeffs.append(coeff)
+        coefficients.append(row_coeffs)
+    return coefficients
