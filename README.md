@@ -2,8 +2,11 @@ Braude College of Engineering, Karmiel
 Capstone Project Phase A
 
 Project Name:EXAMINING THE PERFORMANCE OF SATELLITE PROPAGATORS FOR AUTONOMOUS SPACE-SITUATIONAL-AWARENESS SATELLITES 24-2-R-13
+
 Supervisor:  Elad Denenberg
+
 Mahran AbedEllatif - 209120815 Mahran.Abedellatif@e.braude.ac.il
+
 Shadi AbedAlkream 209120096 Shadi.Abd.Alkream@e.braude.ac.il
 
 
