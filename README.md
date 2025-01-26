@@ -19,3 +19,5 @@ This study highlights the trade-offs between accuracy and computational efficien
 Key words:
 Satellite, Space debris, State propagation, Runge-Kutta, ODE solvers, Numerical methods, Modified Picard-Chebyshev Iteration (MPCI), Satellite navigation, Orbit prediction, SGP4 model, Algorithm evaluation, 
 Position and velocity approximation, Autonomous satellites, Real-time computational efficiency, Adaptive Picard-Chebyshev, gauss lobatto.
+
+note: the folder named Project contains phase one of the project , the folder named Project-phase2 contains the second phase of the project 
