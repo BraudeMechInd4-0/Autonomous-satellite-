@@ -11,6 +11,7 @@
 const double J2 = 1.08263e-3;       // Earth's J2 coefficient
 const double R_E = 6378.137;        // Earth's radius in km
 const double MU = 398600.4418;      // Earth's gravitational parameter (km^3/s^2)
+const double PI = 3.1415926535;
 
 double vectorNorm(const std::vector<double>& vec) {
     double sum = 0;
@@ -428,5 +429,11 @@ double atmosphericDensity(double altitude) {
 }
 
 
-
+double compute_satellite_orbital_period( const std::vector<double>& r0,const std::vector<double>& v0){
+    double r,v,a;
+    r = vectorNorm(r0);
+    v = vectorNorm(v0);
+    a = 1/(2/r-v*v/MU);
+    return 2*PI*sqrt(a*a*a/MU);
+}
 

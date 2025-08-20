@@ -74,5 +74,8 @@ double vectorNorm(const std::array<double, 3>& vec);
 // Atmospheric density model based on altitude
 double atmosphericDensity(double altitude);
 
+//Compute the satellite orbital period
+double compute_satellite_orbital_period( const std::vector<double>& r0,const std::vector<double>& v0);
+
 
 #endif // SATELLITE_UTILS_H

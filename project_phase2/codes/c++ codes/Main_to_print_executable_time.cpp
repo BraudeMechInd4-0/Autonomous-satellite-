@@ -601,27 +601,90 @@ void compare_ODE113_algorithm_with_segments(
 }
 
 
+// Structure to hold parsed command line arguments
+struct SimulationParams {
+    std::vector<double> r0;
+    std::vector<double> v0;
+    double A;
+    double m;
+    double C_D;
+};
+
+bool parseCommandLineArgs(int argc, char* argv[], SimulationParams& params) {
+    // Check if we have the correct number of arguments
+    if (argc != 10) {
+        std::cerr << "Usage: " << argv[0] << " <r0_x> <r0_y> <r0_z> <v0_x> <v0_y> <v0_z> <A> <m> <C_D>" << std::endl;
+        std::cerr << "Example: " << argv[0] << " -23760.532622384497 -33715.879108559609 -8669.038042343847 2.539009331841 -1.701743118962 -0.342990147826 10.0 1250 2.2" << std::endl;
+        return false;
+    }
+
+    try {
+        // Initialize vectors
+        params.r0.resize(3);
+        params.v0.resize(3);
+        
+        // Parse r0 vector (position)
+        params.r0[0] = std::stod(argv[1]);  // r0_x
+        params.r0[1] = std::stod(argv[2]);  // r0_y
+        params.r0[2] = std::stod(argv[3]);  // r0_z
+        
+        // Parse v0 vector (velocity)
+        params.v0[0] = std::stod(argv[4]);  // v0_x
+        params.v0[1] = std::stod(argv[5]);  // v0_y
+        params.v0[2] = std::stod(argv[6]);  // v0_z
+        
+        // Parse satellite parameters
+        params.A = std::stod(argv[7]);    // Cross-sectional area
+        params.m = std::stod(argv[8]);    // Mass
+        params.C_D = std::stod(argv[9]);  // Drag coefficient
+
+        // Print parsed parameters for verification
+        std::cout << "=== Simulation Parameters ===" << std::endl;
+        std::cout << "Initial Position (r0): [" << params.r0[0] << ", " << params.r0[1] << ", " << params.r0[2] << "] km" << std::endl;
+        std::cout << "Initial Velocity (v0): [" << params.v0[0] << ", " << params.v0[1] << ", " << params.v0[2] << "] km/s" << std::endl;
+        std::cout << "Cross-sectional Area (A): " << params.A << " m²" << std::endl;
+        std::cout << "Mass (m): " << params.m << " kg" << std::endl;
+        std::cout << "Drag Coefficient (C_D): " << params.C_D << std::endl;
+        std::cout << "=============================" << std::endl << std::endl;
+
+        return true;
+
+    } catch (const std::invalid_argument& e) {
+        std::cerr << "Error: Invalid argument format. Please ensure all parameters are valid numbers." << std::endl;
+        std::cerr << "Error details: " << e.what() << std::endl;
+        return false;
+    } catch (const std::out_of_range& e) {
+        std::cerr << "Error: Number out of range. Please check your input values." << std::endl;
+        std::cerr << "Error details: " << e.what() << std::endl;
+        return false;
+    }
+}
 
 
 
-int main() {
-    // Initial conditions
-    std::vector<double> r0 = { -23760.532622384497, -33715.879108559609, -8669.038042343847};  // Initial position vector
-    std::vector<double> v0 = {2.539009331841, -1.701743118962, -0.342990147826}; // Initial velocity vector
+int main(int argc, char* argv[]) {
+    // Parse command line arguments
+    SimulationParams params;
+    if (!parseCommandLineArgs(argc, argv, params)) {
+        return 1;
+    }
 
-    // Define parameters for ODE113
-    double tol = 1e-16;   // Tolerance
-    double hmax = 0.01;   // Maximum step size
-    double hmin = 1e-10;  // Minimum step size
-    double mu = 398600.4418;  // Gravitational parameter for Earth
-    double total_time = 1000000;  // Total simulation time in seconds
+    // Extract parameters for easier use
+    const auto& r0 = params.r0;
+    const auto& v0 = params.v0;
+    const double A = params.A;
+    const double m = params.m;
+    const double C_D = params.C_D;
+
+    // Define simulation constants
+    const double tol = 1e-16;
+    const double hmax = 0.01;
+    const double hmin = 1e-10;
+    const double mu = 398600.4418;
+    const double total_time = 1000000;
+    
     // Compute the orbital period
-    double orbital_period =       86162.08174373899;
-
-    // Satellite parameters (Area, Mass, Drag Coefficient)
-    double A = 10.0;
-    double m = 1250;
-    double C_D = 2.2;
+    double orbital_period = compute_satellite_orbital_period(r0, v0);
 
     // File to save execution times
     std::ofstream exec_time_file("algorithm_execution_times.csv");
