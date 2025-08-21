@@ -16,6 +16,7 @@
 #include "ODE45.h"
 #include "ODE78.h"
 #include "ODE113.h"
+#include "MPCI.h"
 #include "coefficients78.h"
 #include <numeric>
 
@@ -600,6 +601,67 @@ void compare_ODE113_algorithm_with_segments(
     std::cout << "Total number of points used: " << total_points << "\n";
 }
 
+void compare_MPCI_algorithm_with_segments(
+    const std::string& algorithm_name,
+    std::vector<std::vector<double>> (*algorithm_func)(
+        const std::vector<double>&,
+        const std::vector<double>&,
+        int,
+        int
+    ),
+    const std::vector<double>& r0,
+    const std::vector<double>& v0,
+    double total_time,
+    double orbital_period,
+    int degree = 10,         // Chebyshev polynomial degree
+    int num_segments = NUM_SEGMENTS
+) {
+    std::vector<double> y0 = r0;
+    y0.insert(y0.end(), v0.begin(), v0.end());
+
+    double total_execution_time = 0.0;
+    std::vector<std::vector<double>> final_positions;
+    std::vector<double> time_points;
+
+    double total_time1 = 0.0;
+    int n_points = NUM_GAUSS_LOBATTO_POINTS;
+
+    while (total_time1 < total_time) {
+        total_time1 += orbital_period;
+        double segment_time = orbital_period / num_segments;
+
+        for (int i = 0; i < num_segments; ++i) {
+            double t_start = total_time1 - orbital_period + i * segment_time;
+            double t_end = t_start + segment_time;
+
+            // Generate Gauss-Lobatto points for the current segment
+            std::vector<double> gauss_lobatto_tspan = gaussLobattoPoints(n_points, t_start, t_end);
+
+            auto start_time = std::chrono::high_resolution_clock::now();
+            auto results = algorithm_func(gauss_lobatto_tspan, y0, degree, num_segments);
+            auto end_time = std::chrono::high_resolution_clock::now();
+
+            std::chrono::duration<double> elapsed = end_time - start_time;
+            total_execution_time += elapsed.count();
+
+            // Update y0 with the last state from the current segment
+            y0 = results.back();
+
+            // Store results for CSV saving
+            for (size_t j = 0; j < gauss_lobatto_tspan.size(); ++j) {
+                time_points.push_back(gauss_lobatto_tspan[j]);
+                final_positions.push_back({results[j][0], results[j][1], results[j][2]});
+            }
+        }
+    }
+
+    save_final_positions_to_csv("Satellite", algorithm_name, time_points, final_positions);
+
+    std::cout << algorithm_name << " total execution time: " << total_execution_time << " seconds\n";
+    std::cout << "Final position after " << total_time << " seconds: "
+              << y0[0] << ", " << y0[1] << ", " << y0[2] << "\n";
+}
+
 
 // Structure to hold parsed command line arguments
 struct SimulationParams {
@@ -786,6 +848,24 @@ int main(int argc, char* argv[]) {
     elapsed = end - start;
     exec_time_file << "ODE113_with_segments," << elapsed.count() << "\n";
     std::cout << "ODE113_with_segments execution time: " << elapsed.count() << " seconds\n";
+
+        
+    start = std::chrono::high_resolution_clock::now();
+    compare_MPCI_algorithm_with_segments(
+        "MPCI",
+        MPCI,
+        r0,
+        v0,
+        total_time,
+        orbital_period,
+        10,           // degree
+        NUM_SEGMENTS  // number of segments
+    );
+    end = std::chrono::high_resolution_clock::now();
+    elapsed = end - start;
+    exec_time_file << "MPCI_with_segments," << elapsed.count() << "\n";
+    std::cout << "MPCI_with_segments execution time: " << elapsed.count() << " seconds\n";
+  
 
     // Close the execution time file
     exec_time_file.close();
