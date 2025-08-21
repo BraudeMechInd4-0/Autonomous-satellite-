@@ -22,8 +22,8 @@
 
 // Define constants
 const double EARTH_RADIUS_KM = 6378.137;  // Earth's radius in kilometers
-const int NUM_SEGMENTS = 8;
-const int NUM_GAUSS_LOBATTO_POINTS = 16;  // Number of points per segment, can be adjusted
+//const int NUM_SEGMENTS = 8;
+//const int NUM_GAUSS_LOBATTO_POINTS = 16;  // Number of points per segment, can be adjusted
 
 
 void save_results_to_csv(const std::string& satellite_name, const std::string& algorithm_name,
@@ -151,7 +151,9 @@ void compare_RK4_algorithm_with_segments(
     double orbital_period,
     double A,
     double m,
-    double C_D
+    double C_D,
+    int num_segments,
+    int n_points
 ) {
     // ✅ Combine initial position and velocity into y0
     std::vector<double> y0 = r0;
@@ -159,8 +161,7 @@ void compare_RK4_algorithm_with_segments(
 
     // Simulation parameters
     double total_time1 = 0.0;
-    int num_segments = NUM_SEGMENTS;
-    int n_points = NUM_GAUSS_LOBATTO_POINTS;
+    
 
     double total_execution_time = 0.0;
     std::vector<double> execution_times;
@@ -237,7 +238,9 @@ void compare_RK8_algorithm_with_segments(
     double h = 0.1,   // Step size
     double A = 12.0,  // Cross-sectional area
     double m = 2000,   // Satellite mass
-    double C_D = 2.2  // Drag coefficient
+    double C_D = 2.2,  // Drag coefficient
+    int num_segments,
+    int n_points,
 ) {
     // ✅ Combine initial position and velocity into y0
     std::vector<double> y0 = r0;
@@ -245,8 +248,6 @@ void compare_RK8_algorithm_with_segments(
 
     // Simulation parameters
     double total_time1 = 0.0;
-    int num_segments = NUM_SEGMENTS;
-    int n_points = NUM_GAUSS_LOBATTO_POINTS;
 
     double total_execution_time = 0.0;
     std::vector<double> execution_times;
@@ -323,13 +324,15 @@ void compare_ODE45_algorithm_with_segments(
     double m,                       // Mass
     double C_D,                     // Drag coefficient
     double rtol,                    // Relative tolerance
-    double atol                     // Absolute tolerance
+    double atol,                     // Absolute tolerance
+    int num_segments,               // Number of segments per orbit
+    int n_points                    // Number of Gauss-Lobatto points per segment
 )
 {
 
     // Calculate the number of orbits and segment duration
     int num_orbits = static_cast<int>(total_time / orbital_period); // Number of orbits
-    int num_segments = NUM_SEGMENTS; // Number of segments per orbit
+    
     double segment_duration = orbital_period / num_segments; // Duration of each segment
 
     std::vector<double> y0 = r0; // Initial position
@@ -350,7 +353,7 @@ void compare_ODE45_algorithm_with_segments(
             double t_end = t_start + segment_duration;
 
             // Generate Gauss-Lobatto points for the current segment
-            std::vector<double> segment_time_points = gaussLobattoPoints(NUM_GAUSS_LOBATTO_POINTS, t_start, t_end);
+            std::vector<double> segment_time_points = gaussLobattoPoints(n_points, t_start, t_end);
 
             // Increment total_points by the number of Gauss-Lobatto points
             total_points += segment_time_points.size();
@@ -431,10 +434,11 @@ void compare_ODE78_algorithm_with_segments(
     double m,                       // Mass
     double C_D,                     // Drag coefficient
     double rtol,                    // Relative tolerance
-    double atol                     // Absolute tolerance
+    double atol,                     // Absolute tolerance
+    int num_segments,               // Number of segments per orbit
+    int n_points                   // Number of Gauss-Lobatto points per segment
 ) {
     int num_orbits = static_cast<int>(total_time / orbital_period);  // Number of orbits
-    int num_segments = NUM_SEGMENTS;  // Number of segments per orbit
     double segment_duration = orbital_period / num_segments;  // Segment duration
 
     std::vector<double> y0 = r0;
@@ -456,7 +460,7 @@ void compare_ODE78_algorithm_with_segments(
             double t_start = orbit * orbital_period + segment * segment_duration;
             double t_end = t_start + segment_duration;
 
-            std::vector<double> segment_time_points = gaussLobattoPoints(NUM_GAUSS_LOBATTO_POINTS, t_start, t_end);
+            std::vector<double> segment_time_points = gaussLobattoPoints(n_points, t_start, t_end);
             total_points += segment_time_points.size();
             // Convert c from map<int, double> to vector<double>
             std::vector<double> c_vector(c.size());
@@ -532,10 +536,11 @@ void compare_ODE113_algorithm_with_segments(
         double total_time,
         double A,
         double m,
-        double C_D) {
+        double C_D,
+        int num_segments,
+        int n_points) {
     int num_orbits = static_cast<int>(total_time / orbital_period);
-    int num_segments = NUM_SEGMENTS;
-    double segment_duration = orbital_period / num_segments;
+    double segment_duration = orbital_period / double(num_segments);
 
     std::vector<double> y0 = r0;
     y0.insert(y0.end(), v0.begin(), v0.end());
@@ -553,7 +558,7 @@ void compare_ODE113_algorithm_with_segments(
             double t_end = t_start + segment_duration;
 
             // Generate Gauss-Lobatto points
-            std::vector<double> segment_time_points = gaussLobattoPoints(NUM_GAUSS_LOBATTO_POINTS, t_start, t_end);
+            std::vector<double> segment_time_points = gaussLobattoPoints(n_points, t_start, t_end);
             total_points += segment_time_points.size();
 
             auto segment_start_time = std::chrono::high_resolution_clock::now();
@@ -613,8 +618,8 @@ void compare_MPCI_algorithm_with_segments(
     const std::vector<double>& v0,
     double total_time,
     double orbital_period,
-    int degree = 10,         // Chebyshev polynomial degree
-    int num_segments = NUM_SEGMENTS
+    int num_segments,
+    int degree         // Chebyshev polynomial degree
 ) {
     std::vector<double> y0 = r0;
     y0.insert(y0.end(), v0.begin(), v0.end());
@@ -624,7 +629,7 @@ void compare_MPCI_algorithm_with_segments(
     std::vector<double> time_points;
 
     double total_time1 = 0.0;
-    int n_points = NUM_GAUSS_LOBATTO_POINTS;
+    int n_points = degree +1;
 
     while (total_time1 < total_time) {
         total_time1 += orbital_period;
@@ -670,13 +675,15 @@ struct SimulationParams {
     double A;
     double m;
     double C_D;
+    int num_segments;
+    int num_gauss_lobatto_points
 };
 
 bool parseCommandLineArgs(int argc, char* argv[], SimulationParams& params) {
     // Check if we have the correct number of arguments
-    if (argc != 10) {
-        std::cerr << "Usage: " << argv[0] << " <r0_x> <r0_y> <r0_z> <v0_x> <v0_y> <v0_z> <A> <m> <C_D>" << std::endl;
-        std::cerr << "Example: " << argv[0] << " -23760.532622384497 -33715.879108559609 -8669.038042343847 2.539009331841 -1.701743118962 -0.342990147826 10.0 1250 2.2" << std::endl;
+    if (argc != 12) {
+        std::cerr << "Usage: " << argv[0] << "Usage: " << argv[0] << " <r0_x> <r0_y> <r0_z> <v0_x> <v0_y> <v0_z> <A> <m> <C_D> <num_segments> <num_gauss_lobatto_points>"  << std::endl;
+        std::cerr << "Example: " << argv[0] << "Example: " << argv[0] << " -23760.53 -33715.87 -8669.03 2.53 -1.70 -0.34 10.0 1250 2.2 8 16" << std::endl;
         return false;
     }
 
@@ -700,6 +707,9 @@ bool parseCommandLineArgs(int argc, char* argv[], SimulationParams& params) {
         params.m = std::stod(argv[8]);    // Mass
         params.C_D = std::stod(argv[9]);  // Drag coefficient
 
+        params.num_segments = std::stoi(argv[10]);
+        params.num_gauss_lobatto_points = std::stoi(argv[11]);
+
         // Print parsed parameters for verification
         std::cout << "=== Simulation Parameters ===" << std::endl;
         std::cout << "Initial Position (r0): [" << params.r0[0] << ", " << params.r0[1] << ", " << params.r0[2] << "] km" << std::endl;
@@ -707,6 +717,8 @@ bool parseCommandLineArgs(int argc, char* argv[], SimulationParams& params) {
         std::cout << "Cross-sectional Area (A): " << params.A << " m²" << std::endl;
         std::cout << "Mass (m): " << params.m << " kg" << std::endl;
         std::cout << "Drag Coefficient (C_D): " << params.C_D << std::endl;
+        std::cout << "Num Segments: " << params.num_segments << std::endl;
+        std::cout << "Num Gauss-Lobatto Points: " << params.num_gauss_lobatto_points << std::endl;
         std::cout << "=============================" << std::endl << std::endl;
 
         return true;
@@ -737,6 +749,8 @@ int main(int argc, char* argv[]) {
     const double A = params.A;
     const double m = params.m;
     const double C_D = params.C_D;
+    const double num_segments = params.num_segments;
+    const int n_points = params.num_gauss_lobatto_points;
 
     // Define simulation constants
     const double tol = 1e-16;
@@ -764,7 +778,9 @@ int main(int argc, char* argv[]) {
     r0, v0,       // Initial position and velocity
     total_time,
     orbital_period,
-    A, m, C_D     // Pass the satellite parameters
+    A, m, C_D,     // Pass the satellite parameters
+    num_segments,  // Number of segments
+    n_points       // Number of Gauss-Lobatto points per segment
 );
     auto end = std::chrono::high_resolution_clock::now();
     std::chrono::duration<double> elapsed = end - start;
@@ -785,7 +801,9 @@ int main(int argc, char* argv[]) {
         step_size,            // Integration step size (h)
         A,                    // Cross-sectional area
         m,                    // Satellite mass
-        C_D                   // Drag coefficient
+        C_D,                  // Drag coefficient
+        num_segments,         // Number of segments
+        n_points              // Number of Gauss-Lobatto points per segment 
     );
     end = std::chrono::high_resolution_clock::now();
     elapsed = end - start;
@@ -809,7 +827,9 @@ int main(int argc, char* argv[]) {
         m,                      // Mass
         C_D,                    // Drag coefficient
         RTOL,                   // Relative tolerance
-        ATOL                    // Absolute tolerance
+        ATOL,                    // Absolute tolerance
+        num_segments,  // Number of segments
+        n_points      // Number of Gauss-Lobatto points per segment
     );
     end = std::chrono::high_resolution_clock::now();
     elapsed = end - start;
@@ -832,7 +852,9 @@ int main(int argc, char* argv[]) {
         m,                      // Mass
         C_D,                    // Drag coefficient
         rtol,                   // Relative tolerance
-        atol                    // Absolute tolerance
+        atol,                    // Absolute tolerance
+        num_segments,           // Number of segments
+        n_points                // Number of Gauss-Lobatto points per segment
     );
     end = std::chrono::high_resolution_clock::now();
     elapsed = end - start;
@@ -842,7 +864,8 @@ int main(int argc, char* argv[]) {
     // Timer for ODE113 with segments
     start = std::chrono::high_resolution_clock::now();
     compare_ODE113_algorithm_with_segments(
-    "ODE113", r0, v0, 1e-6, 100, 1e-3, mu, orbital_period, 970000 ,A,m,C_D
+    "ODE113", r0, v0, 1e-6, 100, 1e-3, mu, orbital_period, 970000 ,A,m,C_D,
+        num_segments, n_points  // Number of segments and Gauss-Lobatto points
 );
     end = std::chrono::high_resolution_clock::now();
     elapsed = end - start;
@@ -858,8 +881,8 @@ int main(int argc, char* argv[]) {
         v0,
         total_time,
         orbital_period,
-        10,           // degree
-        NUM_SEGMENTS  // number of segments
+        n_points-1,           // degree
+        num_segments  // number of segments
     );
     end = std::chrono::high_resolution_clock::now();
     elapsed = end - start;
