@@ -51,13 +51,13 @@ void save_results_to_csv(const std::string& satellite_name, const std::string& a
 // Function to save final positions to a CSV file
 void save_final_positions_to_csv(const std::string& satellite_name, const std::string& algorithm_name,
                                  const std::vector<double>& time_points,
-                                 const std::vector<std::vector<double>>& positions) {
+                                 const std::vector<std::vector<double>>& positions, int num_segments, int n_points) {
     std::string directory = "results";
     std::filesystem::create_directory(directory);
 
     std::string filename = directory + "/" + satellite_name + "_" + algorithm_name +
-                       "_final_positions_" + std::to_string(NUM_SEGMENTS) +
-                       "_" + std::to_string(NUM_GAUSS_LOBATTO_POINTS) + ".csv";
+                       "_final_positions_" + std::to_string(num_segments) +
+                       "_" + std::to_string(n_points) + ".csv";
     std::ofstream file(filename);
 
     if (file.is_open()) {
@@ -207,7 +207,7 @@ void compare_RK4_algorithm_with_segments(
     }
 
     // ✅ Save execution times and results to CSV
-    save_final_positions_to_csv("Satellite", algorithm_name, time_points, final_positions);
+    save_final_positions_to_csv("Satellite", algorithm_name, time_points, final_positions, num_segments, n_points);
 
     // ✅ Print summary
     std::cout << algorithm_name << " total execution time: " << total_execution_time << " seconds\n";
@@ -240,7 +240,7 @@ void compare_RK8_algorithm_with_segments(
     double m = 2000,   // Satellite mass
     double C_D = 2.2,  // Drag coefficient
     int num_segments,
-    int n_points,
+    int n_points
 ) {
     // ✅ Combine initial position and velocity into y0
     std::vector<double> y0 = r0;
@@ -293,7 +293,7 @@ void compare_RK8_algorithm_with_segments(
     }
 
     // ✅ Save execution times and results to CSV
-    save_final_positions_to_csv("Satellite", algorithm_name, time_points, final_positions);
+    save_final_positions_to_csv("Satellite", algorithm_name, time_points, final_positions, num_segments, n_points);
 
     // ✅ Print summary
     std::cout << algorithm_name << " total execution time: " << total_execution_time << " seconds\n";
@@ -395,7 +395,7 @@ void compare_ODE45_algorithm_with_segments(
 
 
     // Save final positions to a CSV file (time point-level granularity)
-    save_final_positions_to_csv("Satellite", algorithm_name, time_points, final_positions);
+    save_final_positions_to_csv("Satellite", algorithm_name, time_points, final_positions, num_segments, n_points);
 
     // Print total execution time
     std::cout << algorithm_name << " total execution time: " << total_execution_time << " seconds\n";
@@ -511,7 +511,7 @@ void compare_ODE78_algorithm_with_segments(
     }
 
     // Save execution times and results
-    save_final_positions_to_csv("Satellite", algorithm_name, time_points, final_positions);
+    save_final_positions_to_csv("Satellite", algorithm_name, time_points, final_positions, num_segments, n_points);
 
     std::cout << algorithm_name << " total execution time: " << total_execution_time << " seconds\n";
     std::cout << "Final position after " << total_time << " seconds: "
@@ -597,7 +597,7 @@ void compare_ODE113_algorithm_with_segments(
     }
 
     // Save results to CSV
-    save_final_positions_to_csv("Satellite", algorithm_name, time_points, final_positions);
+    save_final_positions_to_csv("Satellite", algorithm_name, time_points, final_positions, num_segments, n_points);
 
     // Print statistics
     std::cout << algorithm_name << " total execution time: " << total_execution_time << " seconds\n";
@@ -660,7 +660,7 @@ void compare_MPCI_algorithm_with_segments(
         }
     }
 
-    save_final_positions_to_csv("Satellite", algorithm_name, time_points, final_positions);
+    save_final_positions_to_csv("Satellite", algorithm_name, time_points, final_positions, num_segments, n_points);
 
     std::cout << algorithm_name << " total execution time: " << total_execution_time << " seconds\n";
     std::cout << "Final position after " << total_time << " seconds: "
@@ -676,7 +676,7 @@ struct SimulationParams {
     double m;
     double C_D;
     int num_segments;
-    int num_gauss_lobatto_points
+    int num_gauss_lobatto_points;
 };
 
 bool parseCommandLineArgs(int argc, char* argv[], SimulationParams& params) {
