@@ -677,13 +677,14 @@ struct SimulationParams {
     double C_D;
     int num_segments;
     int num_gauss_lobatto_points;
+    double total_time;
 };
 
 bool parseCommandLineArgs(int argc, char* argv[], SimulationParams& params) {
     // Check if we have the correct number of arguments
     if (argc != 12) {
-        std::cerr << "Usage: " << argv[0] << "Usage: " << argv[0] << " <r0_x> <r0_y> <r0_z> <v0_x> <v0_y> <v0_z> <A> <m> <C_D> <num_segments> <num_gauss_lobatto_points>"  << std::endl;
-        std::cerr << "Example: " << argv[0] << "Example: " << argv[0] << " -23760.53 -33715.87 -8669.03 2.53 -1.70 -0.34 10.0 1250 2.2 8 16" << std::endl;
+        std::cerr << "Usage: " << argv[0] << "Usage: " << argv[0] << " <r0_x> <r0_y> <r0_z> <v0_x> <v0_y> <v0_z> <A> <m> <C_D> <num_segments> <num_gauss_lobatto_points> <tmax>"  << std::endl;
+        std::cerr << "Example: " << argv[0] << "Example: " << argv[0] << " -23760.53 -33715.87 -8669.03 2.53 -1.70 -0.34 10.0 1250 2.2 8 16 1000000" << std::endl;
         return false;
     }
 
@@ -709,6 +710,7 @@ bool parseCommandLineArgs(int argc, char* argv[], SimulationParams& params) {
 
         params.num_segments = std::stoi(argv[10]);
         params.num_gauss_lobatto_points = std::stoi(argv[11]);
+        params.total_time = std::stoi(argv[12]); // Fixed total time for simulation
 
         // Print parsed parameters for verification
         std::cout << "=== Simulation Parameters ===" << std::endl;
@@ -751,13 +753,14 @@ int main(int argc, char* argv[]) {
     const double C_D = params.C_D;
     const double num_segments = params.num_segments;
     const int n_points = params.num_gauss_lobatto_points;
+    const double total_time = params.total_time;
 
     // Define simulation constants
     const double tol = 1e-16;
     const double hmax = 0.01;
     const double hmin = 1e-10;
     const double mu = 398600.4418;
-    const double total_time = 1000000;
+    
     
     // Compute the orbital period
     double orbital_period = compute_satellite_orbital_period(r0, v0);
