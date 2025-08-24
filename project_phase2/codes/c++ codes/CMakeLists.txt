@@ -3,6 +3,8 @@ project(SatellitePropagator)
 
 set(CMAKE_CXX_STANDARD 17)
 
+include_directories(../AhmedMAtallah/Chebyshev-Picard-Method/include)
+
 # Add source files
 set(SOURCES
     Main_to_print_executable_time.cpp
