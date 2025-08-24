@@ -279,38 +279,47 @@ def satellite_motion_only_gravity(t, y, mu=398600):
 
 # Sample TLE data
 tle_data = [
-    
     ("STARLINK-1341",
      "1 45534U 19060A   24291.03059268  .00000589  00000-0  58423-4 0  9996",
      "2 45534  53.0541 230.0736 0001515  90.2860 269.8302 15.06388131247839"),
 
+    ("IRIDIUM 33 DEB",
+     "1 24946U 97051C   24246.56685503  .00000877  00000-0  30433-3 0  9991",
+     "2 24946  86.3813 263.6971 0005980 306.8788  53.1859 14.34480218411509"),
 
+    ("QIANFAN-4",
+     "1 60382U 24140D   24290.81465998  .00001664  00000-0  76079-3 0  9996",
+     "2 60382  88.9933 342.9506 0013083 358.1907   1.9234 14.21024776 10204"),
 
+    ("SKYNET 4C",
+     "1 20776U 90079A   24273.86593681  .00000122  00000-0  00000-0 0  9996",
+     "2 20776  13.5422 354.0676 0003521 217.5807 142.6885  1.00279641124611"),
 
+    ("ASBM-2",
+     "1 60423U 24143B   24286.24012071  .00000053  00000-0  00000-0 0  9996",
+     "2 60423  62.3237  68.6665 5330361 267.8786  33.3421  1.50421044  2382"),
 ]
 # Sample date and initial position, velocity
 date_tuple = (2024, 10, 12, 12, 0, 0)  # Fixed date and time
 year, month, day, hour, minute, second = date_tuple
 
 # Compute position and velocity based on TLE data
-results = compute_position_velocity_and_geodetic([tle_data[0]], year, month, day, hour, minute, second)
-result = results[0]
-print("result=",result)
+for i in range (0 ,len(tle_data)):
+    results = compute_position_velocity_and_geodetic([tle_data[i]], year, month, day, hour, minute, second)
+    result = results[0]
+    print("result=",result)
 
-if 'error' not in result:
-    r0 = np.array([result['position']['x'], result['position']['y'], result['position']['z']], dtype=np.float64)
-    v0 = np.array([result['velocity']['vx'], result['velocity']['vy'], result['velocity']['vz']], dtype=np.float64)
-
+    if 'error' not in result:
+        r0 = np.array([result['position']['x'], result['position']['y'], result['position']['z']], dtype=np.float64)
+        v0 = np.array([result['velocity']['vx'], result['velocity']['vy'], result['velocity']['vz']], dtype=np.float64)
     
-    
-    for i in range (0 ,len(tle_data)):
-        A, m, C_D = get_satellite_params(tle_data[i][0])
-        print(f"{tle_data[i][0]} : A is {A}, m is {m},c_d is {C_D}")
-        print(f"r0 is {r0} , v0 is {v0}")
-        #orbital_period = float(compute_orbital_period_in_seconds(tle_data))
-        #print("orbital period is ",orbital_period)
-        if A is not None and m is not None:
-            # Plot all algorithms and the CSV vs. SGP4 comparison together
-            plot_all_algorithms(r0, v0, tle_data, year, month, day, hour, minute, second, A, m, C_D,)
+    A, m, C_D = get_satellite_params(tle_data[i][0])
+    print(f"{tle_data[i][0]} : A is {A}, m is {m},c_d is {C_D}")
+    print(f"r0 is {r0} , v0 is {v0}")
+    #orbital_period = float(compute_orbital_period_in_seconds(tle_data))
+    #print("orbital period is ",orbital_period)
+    if A is not None and m is not None:
+    # Plot all algorithms and the CSV vs. SGP4 comparison together
+        plot_all_algorithms(r0, v0, tle_data[i], year, month, day, hour, minute, second, A, m, C_D,)
       
 
