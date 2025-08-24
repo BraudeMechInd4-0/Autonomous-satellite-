@@ -29,6 +29,8 @@ std::vector<double> satelliteMotion(double t, const std::vector<double>& y);
 // Function to generate Gauss-Lobatto points in a given range
 std::vector<double> gaussLobattoPoints(int n, double a, double b);
 
+std::vector<double> generate_full_gauss_lobatto_tspan(double total_time, double orbital_period, int num_segments, int n_points);
+
 // Satellite motion model differential equation
 std::vector<double> satellite_motion(double t, const std::vector<double>& y, double mu);
 

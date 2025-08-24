@@ -751,7 +751,7 @@ int main(int argc, char* argv[]) {
     const double A = params.A;
     const double m = params.m;
     const double C_D = params.C_D;
-    const double num_segments = params.num_segments;
+    const int num_segments = params.num_segments;
     const int n_points = params.num_gauss_lobatto_points;
     const double total_time = params.total_time;
 
@@ -760,8 +760,7 @@ int main(int argc, char* argv[]) {
     const double hmax = 0.01;
     const double hmin = 1e-10;
     const double mu = 398600.4418;
-    
-    
+
     // Compute the orbital period
     double orbital_period = compute_satellite_orbital_period(r0, v0);
 
@@ -773,125 +772,103 @@ int main(int argc, char* argv[]) {
     }
     exec_time_file << "Algorithm,Execution Time (s)\n";
 
-    // Timer for RK4 with segments
+    // Generate the full Gauss-Lobatto time span
+    std::vector<double> full_tspan = generate_full_gauss_lobatto_tspan(total_time, orbital_period, num_segments, n_points);
+
+    // Combine initial position and velocity into y0
+    std::vector<double> y0 = r0;
+    y0.insert(y0.end(), v0.begin(), v0.end());
+
+    // RK4
     auto start = std::chrono::high_resolution_clock::now();
-    compare_RK4_algorithm_with_segments(
-    "RK4",
-    rk4,          // Pass the updated rk4 function
-    r0, v0,       // Initial position and velocity
-    total_time,
-    orbital_period,
-    A, m, C_D,     // Pass the satellite parameters
-    num_segments,  // Number of segments
-    n_points       // Number of Gauss-Lobatto points per segment
-);
+    auto rk4_results = rk4(a_c_func, full_tspan, y0, A, m, C_D);
     auto end = std::chrono::high_resolution_clock::now();
     std::chrono::duration<double> elapsed = end - start;
-    exec_time_file << "RK4_with_segments," << elapsed.count() << "\n";
-    std::cout << "RK4_with_segments execution time: " << elapsed.count() << " seconds\n";
+    std::vector<std::vector<double>> rk4_positions;
+    for (const auto& state : rk4_results) {
+        rk4_positions.push_back({state[0], state[1], state[2]});
+    }
+    save_final_positions_to_csv("Satellite", "RK4", full_tspan, rk4_positions, num_segments, n_points);
+    exec_time_file << "RK4," << elapsed.count() << "\n";
+    std::cout << "RK4 execution time: " << elapsed.count() << " seconds\n";
 
-    // Timer for RK8 with segments
+    // RK8
     start = std::chrono::high_resolution_clock::now();
-    double step_size = 0.1;  // Step size for RK8
-    // ✅ Corrected RK8 call with all necessary parameters
-    compare_RK8_algorithm_with_segments(
-        "RK8",  // Algorithm name
-        RK8,                  // Pass the RK8 function pointer
-        r0,                   // Initial position vector
-        v0,                   // Initial velocity vector
-        total_time,           // Total simulation time
-        orbital_period,       // Orbital period
-        step_size,            // Integration step size (h)
-        A,                    // Cross-sectional area
-        m,                    // Satellite mass
-        C_D,                  // Drag coefficient
-        num_segments,         // Number of segments
-        n_points              // Number of Gauss-Lobatto points per segment 
-    );
+    double step_size = 0.1;
+    auto rk8_results = RK8(a_c_func_new, full_tspan, y0, step_size, A, m, C_D);
     end = std::chrono::high_resolution_clock::now();
     elapsed = end - start;
-    exec_time_file << "RK8_with_segments," << elapsed.count() << "\n";
-    std::cout << "RK8_with_segments execution time: " << elapsed.count() << " seconds\n";
+    std::vector<std::vector<double>> rk8_positions;
+    for (const auto& state : rk8_results) {
+        rk8_positions.push_back({state[0], state[1], state[2]});
+    }
+    save_final_positions_to_csv("Satellite", "RK8", full_tspan, rk8_positions, num_segments, n_points);
+    exec_time_file << "RK8," << elapsed.count() << "\n";
+    std::cout << "RK8 execution time: " << elapsed.count() << " seconds\n";
 
-    // Timer for ODE45 with segments
+    // ODE45
     start = std::chrono::high_resolution_clock::now();
-    const double MU = 398600;    // Gravitational parameter
-    const double RTOL = 1e-16;    // Relative tolerance
-    const double ATOL = 1e-16;    // Absolute tolerance
-    // Correct call to compare ODE45 algorithm with segments
-    compare_ODE45_algorithm_with_segments(
-        "ODE45",  // Algorithm name for logging
-        ode45,                  // ODE45 function
-        r0,                     // Initial position
-        v0,                     // Initial velocity
-        total_time,             // Total simulation time
-        orbital_period,         // Orbital period
-        A,                      // Cross-sectional area
-        m,                      // Mass
-        C_D,                    // Drag coefficient
-        RTOL,                   // Relative tolerance
-        ATOL,                    // Absolute tolerance
-        num_segments,  // Number of segments
-        n_points      // Number of Gauss-Lobatto points per segment
-    );
+    const double RTOL = 1e-16;
+    const double ATOL = 1e-16;
+    auto ode45_results = ode45(a_c_func, full_tspan, y0, A, m, C_D, RTOL, ATOL);
     end = std::chrono::high_resolution_clock::now();
     elapsed = end - start;
-    exec_time_file << "ODE45_with_segments," << elapsed.count() << "\n";
-    std::cout << "ODE45_with_segments execution time: " << elapsed.count() << " seconds\n";
+    std::vector<std::vector<double>> ode45_positions;
+    for (const auto& state : ode45_results) {
+        ode45_positions.push_back({state[0], state[1], state[2]});
+    }
+    save_final_positions_to_csv("Satellite", "ODE45", full_tspan, ode45_positions, num_segments, n_points);
+    exec_time_file << "ODE45," << elapsed.count() << "\n";
+    std::cout << "ODE45 execution time: " << elapsed.count() << " seconds\n";
 
-    // Timer for ODE78 with segments
+    // ODE78
     start = std::chrono::high_resolution_clock::now();
     double rtol = 1e-3;
     double atol = 1e-6;
-    // ✅ Correct call to compare_ODE78_algorithm_with_segments
-    compare_ODE78_algorithm_with_segments(
-        "ODE78",  // Algorithm name for result logging
-        ode78,                  // Pass the updated ode78 function
-        r0,                     // Initial position vector
-        v0,                     // Initial velocity vector
-        total_time,             // Total simulation time
-        orbital_period,         // Orbital period
-        A,                      // Cross-sectional area
-        m,                      // Mass
-        C_D,                    // Drag coefficient
-        rtol,                   // Relative tolerance
-        atol,                    // Absolute tolerance
-        num_segments,           // Number of segments
-        n_points                // Number of Gauss-Lobatto points per segment
-    );
+    // You may need to prepare b, bh, c_vector, a for ODE78 as before
+    std::vector<double> b, bh, c_vector;
+    std::map<int, std::map<int, double>> a;
+    // ...initialize b, bh, c_vector, a as needed...
+    auto func = [](double t, const std::vector<double>& y, double A, double m, double C_D) {
+        return a_c_func(t, y, A, m, C_D);
+    };
+    auto ode78_results = ode78(func, full_tspan, y0, b, bh, c_vector, a, rtol, atol, A, m, C_D);
     end = std::chrono::high_resolution_clock::now();
     elapsed = end - start;
-    exec_time_file << "ODE78_with_segments," << elapsed.count() << "\n";
-    std::cout << "ODE78_with_segments execution time: " << elapsed.count() << " seconds\n";
+    std::vector<std::vector<double>> ode78_positions;
+    for (const auto& state : ode78_results) {
+        ode78_positions.push_back({state[0], state[1], state[2]});
+    }
+    save_final_positions_to_csv("Satellite", "ODE78", full_tspan, ode78_positions, num_segments, n_points);
+    exec_time_file << "ODE78," << elapsed.count() << "\n";
+    std::cout << "ODE78 execution time: " << elapsed.count() << " seconds\n";
 
-    // Timer for ODE113 with segments
+    // ODE113
     start = std::chrono::high_resolution_clock::now();
-    compare_ODE113_algorithm_with_segments(
-    "ODE113", r0, v0, 1e-6, 100, 1e-3, mu, orbital_period, 970000 ,A,m,C_D,
-        num_segments, n_points  // Number of segments and Gauss-Lobatto points
-);
+    ODE113Result ode113_results = ODE113(a_c_func_new, full_tspan, y0, mu, tol, tol, hmax, hmin, A, m, C_D);
     end = std::chrono::high_resolution_clock::now();
     elapsed = end - start;
-    exec_time_file << "ODE113_with_segments," << elapsed.count() << "\n";
-    std::cout << "ODE113_with_segments execution time: " << elapsed.count() << " seconds\n";
+    std::vector<std::vector<double>> ode113_positions;
+    for (size_t i = 0; i < ode113_results.time.size(); ++i) {
+        ode113_positions.push_back({ode113_results.values[i][0], ode113_results.values[i][1], ode113_results.values[i][2]});
+    }
+    save_final_positions_to_csv("Satellite", "ODE113", ode113_results.time, ode113_positions, num_segments, n_points);
+    exec_time_file << "ODE113," << elapsed.count() << "\n";
+    std::cout << "ODE113 execution time: " << elapsed.count() << " seconds\n";
 
-        
+    // MPCI
     start = std::chrono::high_resolution_clock::now();
-    compare_MPCI_algorithm_with_segments(
-        "MPCI",
-        MPCI,
-        r0,
-        v0,
-        total_time,
-        orbital_period,
-        n_points-1,           // degree
-        num_segments  // number of segments
-    );
+    int degree = n_points - 1;
+    auto mpci_results = MPCI(full_tspan, y0, degree, num_segments);
     end = std::chrono::high_resolution_clock::now();
     elapsed = end - start;
-    exec_time_file << "MPCI_with_segments," << elapsed.count() << "\n";
-    std::cout << "MPCI_with_segments execution time: " << elapsed.count() << " seconds\n";
-  
+    std::vector<std::vector<double>> mpci_positions;
+    for (const auto& state : mpci_results) {
+        mpci_positions.push_back({state[0], state[1], state[2]});
+    }
+    save_final_positions_to_csv("Satellite", "MPCI", full_tspan, mpci_positions, num_segments, n_points);
+    exec_time_file << "MPCI," << elapsed.count() << "\n";
+    std::cout << "MPCI execution time: " << elapsed.count() << " seconds\n";
 
     // Close the execution time file
     exec_time_file.close();

@@ -68,6 +68,25 @@ std::vector<double> gaussLobattoPoints(int n, double a, double b) {
     return points;
 }
 
+std::vector<double> generate_full_gauss_lobatto_tspan(double total_time, double orbital_period, int num_segments, int n_points) {
+    std::vector<double> full_tspan;
+    int num_orbits = static_cast<int>(total_time / orbital_period) + 1;
+    double segment_duration = orbital_period / num_segments;
+
+    for (int orbit = 0; orbit < num_orbits; ++orbit) {
+        for (int segment = 0; segment < num_segments; ++segment) {
+            double t_start = orbit * orbital_period + segment * segment_duration;
+            double t_end = t_start + segment_duration;
+            std::vector<double> segment_points = gaussLobattoPoints(n_points, t_start, t_end);
+            full_tspan.insert(full_tspan.end(), segment_points.begin(), segment_points.end());
+        }
+    }
+    // Optionally, remove duplicates if segments overlap at endpoints
+    std::sort(full_tspan.begin(), full_tspan.end());
+    full_tspan.erase(std::unique(full_tspan.begin(), full_tspan.end()), full_tspan.end());
+    return full_tspan;
+}
+
 // Overload the + operator for vector addition (vector + vector)
 std::vector<double> operator+(const std::vector<double>& a, const std::vector<double>& b) {
     if (a.size() != b.size()) {
