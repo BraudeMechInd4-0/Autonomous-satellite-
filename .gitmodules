@@ -1,0 +1,3 @@
+[submodule "project_phase2/codes/AhmedMAtallah/Chebyshev-Picard-Method"]
+	path = project_phase2/codes/AhmedMAtallah/Chebyshev-Picard-Method
+	url = git@github.com:AhmedMAtallah/Chebyshev-Picard-Method.git
