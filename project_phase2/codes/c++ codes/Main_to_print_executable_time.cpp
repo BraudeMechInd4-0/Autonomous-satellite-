@@ -126,7 +126,7 @@ extern std::vector<std::vector<double>> RK8(
 );
 
 extern std::vector<std::vector<double>> ode78(
-    std::function<std::vector<double>(double, const std::vector<double>&)> ode_func,
+    std::vector<double>(*ode_func)(double, const std::vector<double>&, double , double , double),
     const std::vector<double>& t_span,
     const std::vector<double>& y0,
     const std::vector<double>& b,  // 8th-order weights
@@ -329,8 +329,9 @@ int main(int argc, char* argv[]) {
 
     // MPCI
     start = std::chrono::high_resolution_clock::now();
+    std::vector<double> tspan_simple = {0.0, total_time};  // Just [start, end]
     int degree = n_points - 1;
-    auto mpci_results = MPCI(full_tspan, y0, degree, num_segments);
+    auto mpci_results = MPCI(a_c_func_new, tspan_simple, y0, 1e-12, 1e-9, orbital_period/num_segments, 2000, degree, A, m, C_D);
     end = std::chrono::high_resolution_clock::now();
     elapsed = end - start;
     std::vector<std::vector<double>> mpci_positions;

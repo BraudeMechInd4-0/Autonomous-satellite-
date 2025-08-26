@@ -1,6 +1,9 @@
 cmake_minimum_required(VERSION 3.10)
 project(SatellitePropagator)
 
+find_package(Eigen3 REQUIRED)
+target_link_libraries(Eigen Eigen3::Eigen)
+
 set(CMAKE_CXX_STANDARD 17)
 
 include_directories(../AhmedMAtallah/Chebyshev-Picard-Method/include)
