@@ -1,5 +1,9 @@
-#pragma once
+#ifndef MPCI_H
+#define MPCI_H
+
+#include <Eigen/Dense>  // This gives you matrices, vectors, etc.
 #include <vector>
+#include <functional>
 
 // MPCI propagator function
 std::vector<std::vector<double>> MPCI(
@@ -15,3 +19,4 @@ std::vector<std::vector<double>> MPCI(
     double m, 
     double C_D
 );
+#endif // MPCI_H
