@@ -1,5 +1,4 @@
 #!/bin/bash
-# filepath: c:\Users\EladD\source\repos\Autonomous-satellite-\project_phase2\codes\c++ codes\install.sh
 
 set -e
 

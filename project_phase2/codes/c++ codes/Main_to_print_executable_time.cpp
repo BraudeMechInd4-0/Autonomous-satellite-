@@ -330,8 +330,7 @@ int main(int argc, char* argv[]) {
     // MPCI
     start = std::chrono::high_resolution_clock::now();
     std::vector<double> tspan_simple = {0.0, total_time};  // Just [start, end]
-    int degree = n_points - 1;
-    auto mpci_results = MPCI(a_c_func_new, tspan_simple, y0, 1e-12, 1e-9, orbital_period/num_segments, 2000, degree, A, m, C_D);
+    auto mpci_results = MPCI(a_c_func_new, tspan_simple, y0, 1e-12, 1e-9, orbital_period/num_segments, 2000, n_points, A, m, C_D);
     end = std::chrono::high_resolution_clock::now();
     elapsed = end - start;
     std::vector<std::vector<double>> mpci_positions;
