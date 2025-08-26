@@ -16,7 +16,7 @@ struct Result {
 
 // ODE113 implementation
 Result ODE113(
-    std::vector<double> (*ode)(double, const std::vector<double>&, double,double,double,double),
+    std::vector<double> (*ode)(double, const std::vector<double>&, double,double,double),
     const vector<double>& tspan,
     const vector<double>& y0,
     double mu,
@@ -44,7 +44,7 @@ Result ODE113(
             h = tspan[tspan_index] - t;
         }
 
-        vector<double> yp = ode(t, y, mu,A,m,C_D);
+        vector<double> yp = ode(t, y, A,m,C_D);
         vector<double> y_pred(y.size()), y_corr(y.size()), yp_corr(y.size());
 
         // Predictor step
@@ -54,7 +54,7 @@ Result ODE113(
 
         // Corrector step
         for (int iter = 0; iter < 3; iter++) {
-            yp_corr = ode(t + h, y_pred, mu,A,m,C_D);
+            yp_corr = ode(t + h, y_pred, A,m,C_D);
             for (size_t i = 0; i < y.size(); i++) {
                 y_corr[i] = y[i] + h * (yp[i] + yp_corr[i]) / 2.0;
             }

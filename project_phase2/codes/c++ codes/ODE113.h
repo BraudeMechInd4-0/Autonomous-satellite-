@@ -11,7 +11,7 @@ struct ODE113Result {
 
 // ODE113 function declaration
 ODE113Result ODE113(
-    std::vector<double> (*ode)(double, const std::vector<double>&, double,double,double,double), // ODE function
+    std::vector<double> (*ode)(double, const std::vector<double>&, double,double,double), // ODE function
     const std::vector<double>& time_points,  // Time span or specific points
     const std::vector<double>& y0,          // Initial conditions
     double mu,                               // Gravitational parameter or other constant

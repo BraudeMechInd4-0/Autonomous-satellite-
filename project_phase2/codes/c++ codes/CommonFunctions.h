@@ -66,7 +66,7 @@ double atmospheric_density(double altitude);
 // Advanced satellite dynamics model
 std::vector<double> a_c_func(double t, const std::vector<double>& y, double A, double m, double C_D = 2.2);
 
-std::vector<double> a_c_func_new(double t, const std::vector<double>& y,double mu, double A, double m, double C_D );
+std::vector<double> a_c_func_new(double t, const std::vector<double>& y, double A, double m, double C_D );
 // Satellite parameter retrieval
 std::tuple<double, double, double> get_satellite_params(const std::string& sat_name);
 

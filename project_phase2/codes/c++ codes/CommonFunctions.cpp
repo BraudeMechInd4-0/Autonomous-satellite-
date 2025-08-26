@@ -341,11 +341,11 @@ std::vector<double> a_c_func(double t, const std::vector<double>& y,double A,dou
 
 // Function to calculate satellite dynamics
 std::vector<double> a_c_func_new(
-        double t, const std::vector<double>& y,double mu, double A, double m, double C_D ) {
+        double t, const std::vector<double>& y, double A, double m, double C_D ) {
 
     std::vector<double> r(y.begin(), y.begin() + 3);  // Position vector [x, y, z]
     std::vector<double> v(y.begin() + 3, y.end());    // Velocity vector [v_x, v_y, v_z]
-    mu = 398600.4418;
+    const double mu = 398600.4418;
     const double R_E = 6378.137;
 
     double r_norm = std::sqrt(r[0]*r[0] + r[1]*r[1] + r[2]*r[2]);

@@ -44,7 +44,7 @@ struct ButcherTableDP8 {
 
 // Dormand-Prince 8th-order method using Gauss-Lobatto points
 std::vector<std::vector<double>> RK8(
-    std::vector<double>(*f)(double, const std::vector<double>&, double , double , double , double),
+    std::vector<double>(*f)(double, const std::vector<double>&, double , double , double),
     const std::vector<double>& t_gauss_lobatto, const std::vector<double>& Y0, double h,
     double A,  // Cross-sectional area
     double m,  // Satellite mass
@@ -72,7 +72,7 @@ std::vector<std::vector<double>> RK8(
             for (size_t l = 0; l < j; ++l) {
                 y_temp = y_temp + (h * butcher_table.a[j][l]) * k[l];
             }
-            k[j] = f(tout[i - 1] + butcher_table.c[j] * h, y_temp,mu,A,m,C_D);
+            k[j] = f(tout[i - 1] + butcher_table.c[j] * h, y_temp,A,m,C_D);
         }
 
         // Update state vector y
