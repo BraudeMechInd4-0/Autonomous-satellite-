@@ -304,8 +304,6 @@ int main(int argc, char* argv[]) {
 
     // ODE78
     start = std::chrono::high_resolution_clock::now();
-    double rtol = 1e-3;
-    double atol = 1e-6;
     // b, bh are global, preparing a c_vector, a for ODE78 
     
     std::vector<double> c_vector(c.size());
@@ -313,7 +311,7 @@ int main(int argc, char* argv[]) {
                 c_vector[pair.first - 1] = pair.second;  // Convert map to vector, adjusting index
             }
     
-    auto ode78_results = ode78(a_c_func_new, full_tspan, y0, b, bh, c_vector, a, rtol, atol, A, m, C_D);
+    auto ode78_results = ode78(a_c_func_new, full_tspan, y0, b, bh, c_vector, a, RTOL, ATOL, A, m, C_D);
     end = std::chrono::high_resolution_clock::now();
     elapsed = end - start;
     std::vector<std::vector<double>> ode78_positions;
@@ -326,7 +324,7 @@ int main(int argc, char* argv[]) {
 
     // ODE113
     start = std::chrono::high_resolution_clock::now();
-    ODE113Result ode113_results = ODE113(a_c_func_new, full_tspan, y0, rtol, atol, hmax, hmin, A, m, C_D);
+    ODE113Result ode113_results = ODE113(a_c_func_new, full_tspan, y0, RTOL, ATOL, hmax, hmin, A, m, C_D);
     end = std::chrono::high_resolution_clock::now();
     elapsed = end - start;
     std::vector<std::vector<double>> ode113_positions;

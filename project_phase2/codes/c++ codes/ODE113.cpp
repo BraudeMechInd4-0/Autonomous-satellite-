@@ -62,31 +62,35 @@ Result ODE113(
         }
 
         // Error estimation
-        double err = 0.0;
+        double scaled_error = 0.0;
         for (size_t i = 0; i < y.size(); i++) {
-            double diff = fabs(y_corr[i] - y_pred[i]);
-            double scale = max(fabs(y[i]), abs_tol);
-            err = max(err, diff / scale);
+            double raw_error = fabs(y_corr[i] - y_pred[i]);
+            double scale = abs_tol + rel_tol * max(fabs(y_corr[i]), fabs(y_pred[i]));
+            double local_scaled_error = raw_error / scale;
+            scaled_error = max(scaled_error, local_scaled_error);
         }
 
-        if (err <= rel_tol) {
+        if (scaled_error <= 1.0) {
             // Accept step
             t += h;
             y = y_corr;
             result.time.push_back(t);
             result.values.push_back(y);
 
-            if (tspan_index < tspan.size() && t == tspan[tspan_index]) {
+            // Check if we've reached a tspan point
+            if (tspan_index < tspan.size() && t >= tspan[tspan_index] - 1e-12) {
                 tspan_index++;
             }
         }
 
         // Adjust step size
-        if (err == 0) {
-            h = min(h * 2.0, hmax);
-        } else {
-            h = max(min(h * 0.9 * sqrt(rel_tol / err), hmax), hmin);
-        }
+        double safety_factor = 0.9;
+        double power = 0.5;  // Appropriate for predictor-corrector methods
+        double eps_min = 1e-15;  // Prevent division by zero
+        
+        double factor = safety_factor * pow(1.0 / max(scaled_error, eps_min), power);
+        factor = max(0.1, min(2.0, factor));  // Limit step size changes
+        h = max(min(h * factor, hmax), hmin);
 
         if (h < hmin) {
             cerr << "Warning: Step size below minimum. Exiting loop." << endl;
