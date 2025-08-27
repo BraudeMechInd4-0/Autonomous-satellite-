@@ -155,7 +155,7 @@ struct SimulationParams {
 bool parseCommandLineArgs(int argc, char* argv[], SimulationParams& params) {
     // Check if we have the correct number of arguments
     if (argc != 16) {
-        std::cerr << "Usage: " << argv[0] << "Usage: " << argv[0] << " <r0_x> <r0_y> <r0_z> <v0_x> <v0_y> <v0_z> <A> <m> <C_D> <num_segments> <num_gauss_lobatto_points> <tmax>"  << std::endl;
+        std::cerr << "Usage: " << argv[0] << "Usage: " << argv[0] << "<name> <r0_x> <r0_y> <r0_z> <v0_x> <v0_y> <v0_z> <A> <m> <C_D> <num_segments> <num_gauss_lobatto_points> <tmax>"  << std::endl;
         std::cerr << "Example: " << argv[0] << "Example: " << argv[0] << "  " << std::endl;
         return false;
     }
