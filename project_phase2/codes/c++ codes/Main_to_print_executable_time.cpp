@@ -228,7 +228,7 @@ int main(int argc, char* argv[]) {
     const std::string satellite_name = params.satellite_name;
     const auto& r0 = params.r0;
     const auto& v0 = params.v0;
-    const double A = params.A;
+    const double A = params.A*1e-6;  // Convert from m^2 to km^2
     const double m = params.m;
     const double C_D = params.C_D;
     const int num_segments = params.num_segments;
