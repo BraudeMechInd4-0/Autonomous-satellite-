@@ -139,6 +139,7 @@ extern std::vector<std::vector<double>> ode78(
 
 // Structure to hold parsed command line arguments
 struct SimulationParams {
+     std::string satellite_name;
     std::vector<double> r0;
     std::vector<double> v0;
     double A;
@@ -153,7 +154,7 @@ struct SimulationParams {
 
 bool parseCommandLineArgs(int argc, char* argv[], SimulationParams& params) {
     // Check if we have the correct number of arguments
-    if (argc != 15) {
+    if (argc != 16) {
         std::cerr << "Usage: " << argv[0] << "Usage: " << argv[0] << " <r0_x> <r0_y> <r0_z> <v0_x> <v0_y> <v0_z> <A> <m> <C_D> <num_segments> <num_gauss_lobatto_points> <tmax>"  << std::endl;
         std::cerr << "Example: " << argv[0] << "Example: " << argv[0] << "  " << std::endl;
         return false;
@@ -163,28 +164,31 @@ bool parseCommandLineArgs(int argc, char* argv[], SimulationParams& params) {
         // Initialize vectors
         params.r0.resize(3);
         params.v0.resize(3);
+
+        //Parse name
+        params.satellite_name = std::string(argv[1]);
         
         // Parse r0 vector (position)
-        params.r0[0] = std::stod(argv[1]);  // r0_x
-        params.r0[1] = std::stod(argv[2]);  // r0_y
-        params.r0[2] = std::stod(argv[3]);  // r0_z
+        params.r0[0] = std::stod(argv[2]);  // r0_x
+        params.r0[1] = std::stod(argv[3]);  // r0_y
+        params.r0[2] = std::stod(argv[4]);  // r0_z
         
         // Parse v0 vector (velocity)
-        params.v0[0] = std::stod(argv[4]);  // v0_x
-        params.v0[1] = std::stod(argv[5]);  // v0_y
-        params.v0[2] = std::stod(argv[6]);  // v0_z
+        params.v0[0] = std::stod(argv[5]);  // v0_x
+        params.v0[1] = std::stod(argv[6]);  // v0_y
+        params.v0[2] = std::stod(argv[7]);  // v0_z
         
         // Parse satellite parameters
-        params.A = std::stod(argv[7]);    // Cross-sectional area
-        params.m = std::stod(argv[8]);    // Mass
-        params.C_D = std::stod(argv[9]);  // Drag coefficient
+        params.A = std::stod(argv[8]);    // Cross-sectional area
+        params.m = std::stod(argv[9]);    // Mass
+        params.C_D = std::stod(argv[10]);  // Drag coefficient
 
-        params.num_segments = std::stoi(argv[10]);
-        params.num_gauss_lobatto_points = std::stoi(argv[11]);
-        params.total_time = std::stoi(argv[12]); // Fixed total time for simulation
+        params.num_segments = std::stoi(argv[11]);
+        params.num_gauss_lobatto_points = std::stoi(argv[12]);
+        params.total_time = std::stoi(argv[13]); // Fixed total time for simulation
 
-        params.absTol = std::stoi(argv[13]);
-        params.relTol = std::stoi(argv[14]);
+        params.absTol = std::stoi(argv[14]);
+        params.relTol = std::stoi(argv[15]);
         
 
         // Print parsed parameters for verification
@@ -221,6 +225,7 @@ int main(int argc, char* argv[]) {
     }
 
     // Extract parameters for easier use
+    const std::string satellite_name = params.satellite_name;
     const auto& r0 = params.r0;
     const auto& v0 = params.v0;
     const double A = params.A;
@@ -267,7 +272,7 @@ int main(int argc, char* argv[]) {
     for (const auto& state : rk4_results) {
         rk4_positions.push_back({state[0], state[1], state[2]});
     }
-    save_final_positions_to_csv("Satellite", "RK4", full_tspan, rk4_positions, num_segments, n_points);
+    save_final_positions_to_csv(satellite_name, "RK4", full_tspan, rk4_positions, num_segments, n_points);
     exec_time_file << "RK4," << elapsed.count() << "\n";
     std::cout << "RK4 execution time: " << elapsed.count() << " seconds\n";
 
@@ -280,7 +285,7 @@ int main(int argc, char* argv[]) {
     for (const auto& state : rk8_results) {
         rk8_positions.push_back({state[0], state[1], state[2]});
     }
-    save_final_positions_to_csv("Satellite", "RK8", full_tspan, rk8_positions, num_segments, n_points);
+    save_final_positions_to_csv(satellite_name, "RK8", full_tspan, rk8_positions, num_segments, n_points);
     exec_time_file << "RK8," << elapsed.count() << "\n";
     std::cout << "RK8 execution time: " << elapsed.count() << " seconds\n";
 
@@ -293,7 +298,7 @@ int main(int argc, char* argv[]) {
     for (const auto& state : ode45_results) {
         ode45_positions.push_back({state[0], state[1], state[2]});
     }
-    save_final_positions_to_csv("Satellite", "ODE45", full_tspan, ode45_positions, num_segments, n_points);
+    save_final_positions_to_csv(satellite_name, "ODE45", full_tspan, ode45_positions, num_segments, n_points);
     exec_time_file << "ODE45," << elapsed.count() << "\n";
     std::cout << "ODE45 execution time: " << elapsed.count() << " seconds\n";
 
@@ -315,7 +320,7 @@ int main(int argc, char* argv[]) {
     for (const auto& state : ode78_results) {
         ode78_positions.push_back({state[0], state[1], state[2]});
     }
-    save_final_positions_to_csv("Satellite", "ODE78", full_tspan, ode78_positions, num_segments, n_points);
+    save_final_positions_to_csv(satellite_name, "ODE78", full_tspan, ode78_positions, num_segments, n_points);
     exec_time_file << "ODE78," << elapsed.count() << "\n";
     std::cout << "ODE78 execution time: " << elapsed.count() << " seconds\n";
 
@@ -328,7 +333,7 @@ int main(int argc, char* argv[]) {
     for (size_t i = 0; i < ode113_results.time.size(); ++i) {
         ode113_positions.push_back({ode113_results.values[i][0], ode113_results.values[i][1], ode113_results.values[i][2]});
     }
-    save_final_positions_to_csv("Satellite", "ODE113", ode113_results.time, ode113_positions, num_segments, n_points);
+    save_final_positions_to_csv(satellite_name, "ODE113", ode113_results.time, ode113_positions, num_segments, n_points);
     exec_time_file << "ODE113," << elapsed.count() << "\n";
     std::cout << "ODE113 execution time: " << elapsed.count() << " seconds\n";
 
@@ -342,7 +347,7 @@ int main(int argc, char* argv[]) {
     for (const auto& state : mpci_results) {
         mpci_positions.push_back({state[0], state[1], state[2]});
     }
-    save_final_positions_to_csv("Satellite", "MPCI", full_tspan, mpci_positions, num_segments, n_points);
+    save_final_positions_to_csv(satellite_name, "MPCI", full_tspan, mpci_positions, num_segments, n_points);
     exec_time_file << "MPCI," << elapsed.count() << "\n";
     std::cout << "MPCI execution time: " << elapsed.count() << " seconds\n";
 
