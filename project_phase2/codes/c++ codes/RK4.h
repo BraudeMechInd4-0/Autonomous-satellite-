@@ -4,7 +4,7 @@
 
 #include <vector>
 
-std::vector<std::vector<double>> rk4(
+std::vector<std::vector<double>> RK4(
     std::vector<double>(*odefun)(double, const std::vector<double>&, double, double, double),
     const std::vector<double>& t_gauss_lobatto,
     const std::vector<double>& y0

@@ -6,6 +6,7 @@
 #include <array>
 #include <vector>
 #include <iostream>
+#include <algorithm>
 
 // Constants
 const double J2 = 1.08263e-3;       // Earth's J2 coefficient

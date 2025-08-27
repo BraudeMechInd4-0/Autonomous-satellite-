@@ -183,8 +183,8 @@ bool parseCommandLineArgs(int argc, char* argv[], SimulationParams& params) {
         params.num_gauss_lobatto_points = std::stoi(argv[11]);
         params.total_time = std::stoi(argv[12]); // Fixed total time for simulation
 
-        params.Abstol = std::stoi(argv[13]);
-        params.Reltol = std::stoi(argv[14]);
+        params.absTol = std::stoi(argv[13]);
+        params.relTol = std::stoi(argv[14]);
         
 
         // Print parsed parameters for verification
