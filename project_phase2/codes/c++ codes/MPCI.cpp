@@ -67,8 +67,8 @@ std::vector<std::vector<double>> MPCI(
 
         //Creat T matrix
         Eigen::VectorXd k_indices = Eigen::VectorXd::LinSpaced(N, 0, N-1);
-        Eigen::MatrixXd acos_tau_matrix = tau.array().acos().matrix();
-        Eigen::MatrixXd T = (k_indices * acos_tau_matrix).array().cos();
+        Eigen::RowVectorXd acos_tau = tau.array().acos();
+        Eigen::MatrixXd T = (k_indices * acos_tau).array().cos().transpose();
 
         // Create Tm1: Chebyshev polynomials at acos(-1) = π
         Eigen::RowVectorXd Tm1 = (Eigen::RowVectorXd::LinSpaced(N + 1, 0, N).array() * M_PI).cos();
@@ -85,8 +85,8 @@ std::vector<std::vector<double>> MPCI(
         Eigen::VectorXd upper_diag(N);
         upper_diag[0] = -0.5;
         upper_diag.tail(N-1) = -s_.head(N-1);
-        for (int i = 0; i < N; ++i) {
-            S_3(i+1, i+2) = upper_diag[i];
+        for (int i = 1; i < N; ++i) {
+            S_3(i, i+1) = upper_diag[i];
         }
 
         // Create S_2 matrix with lower diagonal
@@ -94,8 +94,8 @@ std::vector<std::vector<double>> MPCI(
         Eigen::VectorXd lower_diag(N + 1);
         lower_diag[0] = 1.0;
         lower_diag.tail(N) = s_;
-        for (int i = 0; i < N + 1; ++i) {
-            S_2(i+1, i) = lower_diag[i];
+        for (int i = 1; i < N+1; ++i) {
+            S_2(i, i-1) = lower_diag[i];
         }
 
         // Combine S_2 and S_3
@@ -111,7 +111,7 @@ std::vector<std::vector<double>> MPCI(
 
         // Reallocate T matrix for the new dimensions (0:N instead of 0:N-1)
         k_indices = Eigen::VectorXd::LinSpaced(N+1, 0, N);
-        T = (k_indices * acos_tau_matrix).array().cos();
+        T = (k_indices * acos_tau).array().cos().transpose();
 
         double eAbs = 1e10;  
         double eRel = 1e10;
@@ -181,15 +181,15 @@ std::vector<std::vector<double>> MPCI(
             }
         }
 
-        // Check if this was the last run
-        if (lastrunflag) {
-            break;  // Exit the while(true) loop
-        }
-
         // Update for next segment
         firstpos = lastpos;
         tstart = tend;
         tend = tstart + Sec;
+
+        // Check if this was the last run
+        if (lastrunflag) {
+            break;  // Exit the while(true) loop
+        }
 
         // Check if we've reached the final segment
         if (tend > tspan.back()) {

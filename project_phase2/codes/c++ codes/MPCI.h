@@ -14,7 +14,7 @@ std::vector<std::vector<double>> MPCI(
     double rel_tol = 1e-9,
     double Sec = -1,  // in satellites Sec is the Orbital period/num_segments. -1 means use tspan.back()
     int MaxIter=2000,
-    int N = 32,
+    int N=16,
     double A=3.9,
     double m=260,
     double C_D=2.2

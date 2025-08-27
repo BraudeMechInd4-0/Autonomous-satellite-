@@ -71,20 +71,24 @@ std::vector<double> gaussLobattoPoints(int n, double a, double b) {
 
 std::vector<double> generate_full_gauss_lobatto_tspan(double total_time, double orbital_period, int num_segments, int n_points) {
     std::vector<double> full_tspan;
-    int num_orbits = static_cast<int>(total_time / orbital_period) + 1;
     double segment_duration = orbital_period / num_segments;
-
-    for (int orbit = 0; orbit < num_orbits; ++orbit) {
-        for (int segment = 0; segment < num_segments; ++segment) {
-            double t_start = orbit * orbital_period + segment * segment_duration;
-            double t_end = t_start + segment_duration;
-            std::vector<double> segment_points = gaussLobattoPoints(n_points, t_start, t_end);
+    int total_segments = static_cast<int>(std::ceil(total_time / segment_duration));
+    
+    for (int segment = 0; segment < total_segments; ++segment) {
+        double t_start = segment * segment_duration;
+        double t_end = std::min(t_start + segment_duration, total_time);  // Handle partial segment at end
+        
+        std::vector<double> segment_points = gaussLobattoPoints(n_points, t_start, t_end);
+        
+        if (segment == 0) {
+            // First segment: include all points
             full_tspan.insert(full_tspan.end(), segment_points.begin(), segment_points.end());
+        } else {
+            // Subsequent segments: skip first point (it's the same as last point of previous segment)
+            full_tspan.insert(full_tspan.end(), segment_points.begin() + 1, segment_points.end());
         }
     }
-    // Optionally, remove duplicates if segments overlap at endpoints
-    std::sort(full_tspan.begin(), full_tspan.end());
-    full_tspan.erase(std::unique(full_tspan.begin(), full_tspan.end()), full_tspan.end());
+    
     return full_tspan;
 }
 

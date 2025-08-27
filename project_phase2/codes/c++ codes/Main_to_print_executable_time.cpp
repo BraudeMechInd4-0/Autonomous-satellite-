@@ -153,9 +153,9 @@ struct SimulationParams {
 
 bool parseCommandLineArgs(int argc, char* argv[], SimulationParams& params) {
     // Check if we have the correct number of arguments
-    if (argc != 12) {
+    if (argc != 15) {
         std::cerr << "Usage: " << argv[0] << "Usage: " << argv[0] << " <r0_x> <r0_y> <r0_z> <v0_x> <v0_y> <v0_z> <A> <m> <C_D> <num_segments> <num_gauss_lobatto_points> <tmax>"  << std::endl;
-        std::cerr << "Example: " << argv[0] << "Example: " << argv[0] << " -23760.53 -33715.87 -8669.03 2.53 -1.70 -0.34 10.0 1250 2.2 8 16 1000000 1e-12 1e-9" << std::endl;
+        std::cerr << "Example: " << argv[0] << "Example: " << argv[0] << "  " << std::endl;
         return false;
     }
 
@@ -236,7 +236,7 @@ int main(int argc, char* argv[]) {
     // Define simulation constants
     const double tol = 1e-9;
     const double hmax = orbital_period/num_segments/n_points;
-    const double hmin = 1e-10;
+    const double hmin = 1e-14;
     const double RTOL = 1e-9;
     const double ATOL = 1e-12;
     const double mu = 398600.4418;
@@ -321,7 +321,7 @@ int main(int argc, char* argv[]) {
 
     // ODE113
     start = std::chrono::high_resolution_clock::now();
-    ODE113Result ode113_results = ODE113(a_c_func_new, full_tspan, y0, tol, tol, hmax, hmin, A, m, C_D);
+    ODE113Result ode113_results = ODE113(a_c_func_new, full_tspan, y0, rtol, atol, hmax, hmin, A, m, C_D);
     end = std::chrono::high_resolution_clock::now();
     elapsed = end - start;
     std::vector<std::vector<double>> ode113_positions;
