@@ -5,6 +5,8 @@ EXE="./SatellitePropagator"
 NUM_SEGMENTS_LIST=(8 16)
 NUM_POINTS=16
 TOTAL_TIME=10000000  # Fixed total time for all simulations
+ABS_TOL=1e-12
+REL_TOL=1e-9
 
 # Requires jq (JSON parser for bash)
 if ! command -v jq &> /dev/null; then
@@ -27,6 +29,6 @@ for ((i=0; i<$sat_count; i++)); do
 
     for num_segments in "${NUM_SEGMENTS_LIST[@]}"; do
         echo "Running $name with segments=$num_segments, points=$NUM_POINTS"
-        $EXE $r0x $r0y $r0z $v0x $v0y $v0z $A $m $c_d $num_segments $NUM_POINTS $TOTAL_TIME
+        $EXE $r0x $r0y $r0z $v0x $v0y $v0z $A $m $c_d $num_segments $NUM_POINTS $TOTAL_TIME $ABS_TOL $REL_TOL
     done
 done
