@@ -13,6 +13,7 @@ from scipy.interpolate import interp1d
 
 # Constants
 EARTH_RADIUS_KM = 6378.137  # WGS84 Earth radius at the equator in kilometers
+TMAX = 1000000
 comparison_results = []
 def eci_to_geodetic(x, y, z):
     """
@@ -217,7 +218,7 @@ def plot_all_algorithms(r0, v0, tle_data, year, month, day, hour, minute, second
     algorithms = ["RK4","RK8","ODE45","ODE78","ODE113","APCI"]
 
     y0 = np.concatenate((r0, v0))  # Initial state vector: position + velocity
-    tspan=[0,2000]
+    tspan=[0,TMAX]
     # Create a figure for plotting
     fig, ax = plt.subplots(figsize=(10, 6))
     baseResults = np.array(
