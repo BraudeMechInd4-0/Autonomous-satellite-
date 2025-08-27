@@ -29,6 +29,6 @@ for ((i=0; i<$sat_count; i++)); do
 
     for num_segments in "${NUM_SEGMENTS_LIST[@]}"; do
         echo "Running $name with segments=$num_segments, points=$NUM_POINTS"
-        $EXE $r0x $r0y $r0z $v0x $v0y $v0z $A $m $c_d $num_segments $NUM_POINTS $TOTAL_TIME $ABS_TOL $REL_TOL
+        $EXE  $name $r0x $r0y $r0z $v0x $v0y $v0z $A $m $c_d $num_segments $NUM_POINTS $TOTAL_TIME $ABS_TOL $REL_TOL
     done
 done
