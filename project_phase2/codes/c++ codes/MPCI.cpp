@@ -113,13 +113,12 @@ std::vector<std::vector<double>> MPCI(
         k_indices = Eigen::VectorXd::LinSpaced(N+1, 0, N);
         T = (k_indices * acos_tau).array().cos().transpose();
 
-        double eAbs = 1e10;  
-        double eRel = 1e10;
+        double scaled_error;  
         int i = 0;
+        const double CONVERGENCE_SAFETY = 0.1;  // 10× more stringent (or use 1.0 for no safety)
 
-        
-
-        while ((eAbs > abs_tol || eRel > rel_tol) && i < MaxIter) {
+    
+        while (i < MaxIter) {
             // Compute F matrix: evaluate odefun at each transformed time
             Eigen::MatrixXd F(tau.cols(), 6);  // (N+1) × 6 matrix
 
@@ -151,8 +150,14 @@ std::vector<std::vector<double>> MPCI(
         xnew = T * bi;
 
         // Compute convergence criteria
-        eAbs = (xnew - xold).cwiseAbs().maxCoeff();
-        eRel = ((xnew - xold).cwiseAbs().cwiseQuotient(xold.cwiseAbs().cwiseMax(xnew.cwiseAbs()))).maxCoeff();
+        //eAbs = (xnew - xold).cwiseAbs().maxCoeff();
+        //eRel = ((xnew - xold).cwiseAbs().cwiseQuotient(xold.cwiseAbs().cwiseMax(xnew.cwiseAbs()))).maxCoeff();
+
+        double scaled_error = ((xnew - xold).cwiseAbs().array() / (abs_tol + rel_tol * xold.cwiseAbs().cwiseMax(xnew.cwiseAbs()).array())).maxCoeff();
+        
+        if (scaled_error <= CONVERGENCE_SAFETY) {
+                break;  // Converged
+            }
 
         // Update xold for next iteration
         xold = xnew;

@@ -81,7 +81,7 @@ std::vector<std::vector<double>> ode45(
     double rtol ,
     double atol
 ) {
-    std::vector<double> tout = {t_span[0]};
+    //std::vector<double> tout = {t_span[0]};
     std::vector<std::vector<double>> yout = {y0};
 
     double t = t_span[0];
@@ -91,13 +91,24 @@ std::vector<std::vector<double>> ode45(
         double h = t_span[i] - t_span[i - 1];  // Step size
 
         while (t < t_span[i]) {
+            if (t + h > t_span[i]) {
+                h = t_span[i] - t;
+            }
+
             auto [t_next, y_next, h_new] = rk45_step(func, t, y, h, rtol, atol, A, m, C_D);
             t = t_next;
             y = y_next;
             h = h_new;
         }
 
-        tout.push_back(t);
+        // Safety check - warn if we're not exactly on target
+        if (abs(t - t_span[i]) > 1e-12) {  // Reasonable floating point tolerance
+            std::cerr << "Warning: ODE45 landed at t=" << std::setprecision(15) << t 
+                    << " instead of target t_span[" << i << "]=" << t_span[i] 
+                    << " (difference: " << (t - t_span[i]) << ")" << std::endl;
+        }
+
+        //tout.push_back(t);
         yout.push_back(y);
     }
 

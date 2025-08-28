@@ -7,98 +7,116 @@
 
 using namespace std;
 
-struct Result {
-    vector<double> time;
-    vector<vector<double>> values;
-};
-
-
-
 // ODE113 implementation
-Result ODE113(
-    std::vector<double> (*ode)(double, const std::vector<double>&, double,double,double),
-    const vector<double>& tspan,
-    const vector<double>& y0,
-    double mu,
+std::vector<std::vector<double>> ODE113(
+    std::vector<double> (*ode)(double, const std::vector<double> &, double, double, double),
+    const vector<double> &tspan,
+    const vector<double> &y0,
     double rel_tol = 1e-9,
     double abs_tol = 1e-9,
     double hmax = 10.0,
     double hmin = 0.001,
-    double A=12,
-    double m=2000,
-    double C_D=2.2
-) {
-    Result result;
+    double A = 12,
+    double m = 2000,
+    double C_D = 2.2)
+{
+    std::vector<std::vector<double>>  yout;
     double t = tspan[0];
     double t_end = tspan.back();
     double h = 0.01; // Initial step size
     vector<double> y = y0;
 
-    result.time.push_back(t);
-    result.values.push_back(y);
+    yout.push_back(y);
 
     size_t tspan_index = 1;
 
-    while (t < t_end) {
-        if (tspan_index < tspan.size() && t + h > tspan[tspan_index]) {
-            h = tspan[tspan_index] - t;
-        }
+    for (size_t i = 1; i < tspan.size(); ++i)
+    {
+        double target_time = tspan[i];
 
-        vector<double> yp = ode(t, y, A,m,C_D);
-        vector<double> y_pred(y.size()), y_corr(y.size()), yp_corr(y.size());
-
-        // Predictor step
-        for (size_t i = 0; i < y.size(); i++) {
-            y_pred[i] = y[i] + h * yp[i];
-        }
-
-        // Corrector step
-        for (int iter = 0; iter < 3; iter++) {
-            yp_corr = ode(t + h, y_pred, A,m,C_D);
-            for (size_t i = 0; i < y.size(); i++) {
-                y_corr[i] = y[i] + h * (yp[i] + yp_corr[i]) / 2.0;
+        while (t < target_time)
+        {
+            // Check for overshoot
+            if (t + h > target_time)
+            {
+                h = target_time - t;
             }
-            y_pred = y_corr;
-        }
 
-        // Error estimation
-        double scaled_error = 0.0;
-        for (size_t i = 0; i < y.size(); i++) {
-            double raw_error = fabs(y_corr[i] - y_pred[i]);
-            double scale = abs_tol + rel_tol * max(fabs(y_corr[i]), fabs(y_pred[i]));
-            double local_scaled_error = raw_error / scale;
-            scaled_error = max(scaled_error, local_scaled_error);
-        }
+            // Compute derivative
+            vector<double> yp = ode(t, y, A, m, C_D);
+            vector<double> y_pred(y.size()), y_corr(y.size()), yp_corr(y.size());
 
-        if (scaled_error <= 1.0) {
-            // Accept step
-            t += h;
-            y = y_corr;
-            result.time.push_back(t);
-            result.values.push_back(y);
+            // Predictor step
+            for (size_t j = 0; j < y.size(); j++)
+            {
+                y_pred[j] = y[j] + h * yp[j];
+            }
 
-            // Check if we've reached a tspan point
-            if (tspan_index < tspan.size() && t >= tspan[tspan_index] - 1e-12) {
-                tspan_index++;
+            // Corrector step
+            for (int iter = 0; iter < 3; iter++)
+            {
+                yp_corr = ode(t + h, y_pred, A, m, C_D);
+                for (size_t j = 0; j < y.size(); j++)
+                {
+                    y_corr[j] = y[j] + h * (yp[j] + yp_corr[j]) / 2.0;
+                }
+                y_pred = y_corr;
+            }
+
+            // Error estimation
+            double scaled_error = 0.0;
+            for (size_t j = 0; j < y.size(); j++)
+            {
+                double raw_error = fabs(y_corr[j] - y_pred[j]);
+                double scale = abs_tol + rel_tol * max(fabs(y_corr[j]), fabs(y_pred[j]));
+                double local_scaled_error = raw_error / scale;
+                scaled_error = max(scaled_error, local_scaled_error);
+            }
+
+            if (scaled_error <= 1.0)
+            {
+                // Accept step
+                t += h;
+                y = y_corr;
+
+                // Adjust step size for next iteration (only if not at target)
+                if (t < target_time)
+                {
+                    double safety_factor = 0.9;
+                    double power = 0.5;
+                    double eps_min = 1e-15;
+                    double factor = safety_factor * pow(1.0 / max(scaled_error, eps_min), power);
+                    factor = max(0.1, min(2.0, factor));
+                    h = max(min(h * factor, hmax), hmin);
+                }
+            }
+            else
+            {
+                // Reject step and reduce step size
+                double safety_factor = 0.9;
+                double power = 0.5;
+                double eps_min = 1e-15;
+                double factor = safety_factor * pow(1.0 / max(scaled_error, eps_min), power);
+                factor = max(0.1, min(2.0, factor));
+                h = max(min(h * factor, hmax), hmin);
+            }
+
+            if (h < hmin)
+            {
+                h = hmin;
             }
         }
 
-        // Adjust step size
-        double safety_factor = 0.9;
-        double power = 0.5;  // Appropriate for predictor-corrector methods
-        double eps_min = 1e-15;  // Prevent division by zero
-        
-        double factor = safety_factor * pow(1.0 / max(scaled_error, eps_min), power);
-        factor = max(0.1, min(2.0, factor));  // Limit step size changes
-        h = max(min(h * factor, hmax), hmin);
-
-        if (h < hmin) {
-            cerr << "Warning: Step size below minimum. Exiting loop." << endl;
-            break;
+        // Safety check - warn if we're not exactly on target
+        if (abs(t - target_time) > 1e-12)
+        {
+            std::cerr << "Warning: ODE113 landed at t=" << std::setprecision(15) << t
+                      << " instead of target t_span[" << i << "]=" << target_time
+                      << " (difference: " << (t - target_time) << ")" << std::endl;
         }
+
+        yout.push_back(y);
     }
 
-    return result;
+    return yout;
 }
-
-
