@@ -121,34 +121,6 @@ void writeToCSV(const std::vector<double> &tout, const std::vector<std::vector<d
     file.close();
 }
 
-// Function definitions for each algorithm (rk4, rk8, ode45, ode78, ODE113)
-// Assume these functions are implemented in other files as per your setup
-extern std::vector<std::vector<double>> RK4(
-    std::vector<double> (*odefun)(double, const std::vector<double> &, double, double, double), // Updated signature
-    const std::vector<double> &t_gauss_lobatto,
-    const std::vector<double> &y0,
-    double A, // Cross-sectional area
-    double m, // Satellite mass
-    double C_D);
-extern std::vector<std::vector<double>> RK8(
-    std::vector<double> (*f)(double, const std::vector<double> &, double, double, double),
-    const std::vector<double> &t_gauss_lobatto, const std::vector<double> &Y0, double h,
-    double A,  // Cross-sectional area
-    double m,  // Satellite mass
-    double C_D // Drag coefficient
-);
-
-extern std::vector<std::vector<double>> ode78(
-    std::vector<double> (*ode_func)(double, const std::vector<double> &, double, double, double),
-    const std::vector<double> &t_span,
-    const std::vector<double> &y0,
-    const std::vector<double> &b,                  // 8th-order weights
-    const std::vector<double> &bh,                 // 7th-order weights
-    const std::vector<double> &c,                  // Time nodes (Gauss-Lobatto points)
-    const std::map<int, std::map<int, double>> &a, // Coupling coefficients (Butcher tableau)
-    double rtol,
-    double atol);
-
 // Structure to hold parsed command line arguments
 struct SimulationParams
 {
@@ -256,6 +228,7 @@ int main(int argc, char *argv[])
 
     // Compute the orbital period
     double orbital_period = compute_satellite_orbital_period(r0, v0);
+    std::cout << "Computed Orbital Period: " << orbital_period << " seconds" << std::endl;
 
     // Define simulation constants
     const double tol = 1e-9;
@@ -263,7 +236,6 @@ int main(int argc, char *argv[])
     const double hmin = 1e-14;
     const double RTOL = 1e-9;
     const double ATOL = 1e-12;
-    const double mu = 398600.4418;
 
     // File to save execution times
     std::ofstream exec_time_file("algorithm_execution_times.csv");

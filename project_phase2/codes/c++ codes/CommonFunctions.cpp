@@ -72,8 +72,10 @@ std::vector<double> gaussLobattoPoints(int n, double a, double b) {
 std::vector<double> generate_full_gauss_lobatto_tspan(double total_time, double orbital_period, int num_segments, int n_points) {
     std::vector<double> full_tspan;
     double segment_duration = orbital_period / num_segments;
+    std::cout << "Segment Duration: " << segment_duration << " seconds" << std::endl;
     int total_segments = static_cast<int>(std::ceil(total_time / segment_duration));
-    
+    std::cout << "Total Segments: " << total_segments << std::endl;
+
     for (int segment = 0; segment < total_segments; ++segment) {
         double t_start = segment * segment_duration;
         double t_end = std::min(t_start + segment_duration, total_time);  // Handle partial segment at end
@@ -294,7 +296,7 @@ std::vector<double> a_c_func(double t, const std::vector<double>& y,double A,dou
     std::vector<double> r(y.begin(), y.begin() + 3);  // Position vector [x, y, z]
     std::vector<double> v(y.begin() + 3, y.end());    // Velocity vector [v_x, v_y, v_z]
 
-    const double R_E = 6378.137;
+    //const double R_E = 6378.137;
 
     double r_norm = std::sqrt(r[0]*r[0] + r[1]*r[1] + r[2]*r[2]);
     double altitude = r_norm - R_E;
@@ -350,18 +352,17 @@ std::vector<double> a_c_func_new(
 
     std::vector<double> r(y.begin(), y.begin() + 3);  // Position vector [x, y, z]
     std::vector<double> v(y.begin() + 3, y.end());    // Velocity vector [v_x, v_y, v_z]
-    const double mu = 398600.4418;
-    const double R_E = 6378.137;
+    //const double mu = 398600.4418;
+    //const double R_E = 6378.137;
 
     double r_norm = std::sqrt(r[0]*r[0] + r[1]*r[1] + r[2]*r[2]);
     double altitude = r_norm - R_E;
     double rho = atmospheric_density(altitude);
 
-
     double x = r[0], y_pos = r[1], z = r[2];  // Decompose the position vector
 
     // J2 acceleration components
-    double factor = -(3.0 / 2.0) * J2 * mu * (R_E * R_E) / pow(r_norm, 5);
+    double factor = -(3.0 / 2.0) * J2 * MU * (R_E * R_E) / pow(r_norm, 5);
     double z2_r2 = (z / r_norm) * (z / r_norm);  // (z / r)^2 term
 
     std::vector<double> a_c(3);
@@ -379,9 +380,9 @@ std::vector<double> a_c_func_new(
 
     // Gravity acceleration components
     std::vector<double> a_g(3);
-    a_g[0] = (-mu / pow(r_norm, 3)) * x;
-    a_g[1] = (-mu / pow(r_norm, 3)) * y_pos;
-    a_g[2] = (-mu / pow(r_norm, 3)) * z;
+    a_g[0] = (-MU / pow(r_norm, 3)) * x;
+    a_g[1] = (-MU / pow(r_norm, 3)) * y_pos;
+    a_g[2] = (-MU / pow(r_norm, 3)) * z;
 
     // Total acceleration
     std::vector<double> total_acceleration(3);
@@ -440,6 +441,10 @@ double atmosphericDensity(double altitude) {
         {700, 3.614e-14, 88.667}, {800, 1.170e-14, 124.64}, {900, 5.245e-15, 181.05},
         {1000, 3.019e-15, 268.00}
     };
+
+    if (altitude < std::get<0>(altitude_data.front())){
+        throw std::out_of_range("Warning: Altitude " + std::to_string(altitude) + " km is below the valid range. Setting density to 0.");
+    }
 
     for (size_t i = 0; i < altitude_data.size() - 1; ++i) {
         auto [h0, rho0, H] = altitude_data[i];

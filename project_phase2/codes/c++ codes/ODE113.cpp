@@ -52,10 +52,20 @@ std::vector<std::vector<double>> ODE113(
                 y_pred[j] = y[j] + h * yp[j];
             }
 
+            // STORE the initial predictor for error estimation
+            //vector<double> y_pred_initial = y_pred;
+            vector<double> y_prev_corr;
+
             // Corrector step
             for (int iter = 0; iter < 3; iter++)
             {
                 yp_corr = ode(t + h, y_pred, A, m, C_D);
+
+                // SAVE the previous corrector BEFORE computing the new one
+                if (iter == 2) {  // Save the result from iteration 1 (second corrector)
+                    y_prev_corr = y_pred;  // This contains the corrector from iteration 1
+                }
+
                 for (size_t j = 0; j < y.size(); j++)
                 {
                     y_corr[j] = y[j] + h * (yp[j] + yp_corr[j]) / 2.0;
@@ -67,8 +77,8 @@ std::vector<std::vector<double>> ODE113(
             double scaled_error = 0.0;
             for (size_t j = 0; j < y.size(); j++)
             {
-                double raw_error = fabs(y_corr[j] - y_pred[j]);
-                double scale = abs_tol + rel_tol * max(fabs(y_corr[j]), fabs(y_pred[j]));
+                double raw_error = fabs(y_corr[j] - y_prev_corr[j]);
+                double scale = abs_tol + rel_tol * max(fabs(y_corr[j]), fabs(y_prev_corr[j]));
                 double local_scaled_error = raw_error / scale;
                 scaled_error = max(scaled_error, local_scaled_error);
             }
