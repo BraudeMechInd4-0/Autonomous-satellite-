@@ -16,35 +16,17 @@ J2 = 0.01082635854;
 
 %% these values are from the CATCH paper
 deltas = [8,16]; %number of sections per orbit
-Ns = [8 16]; %number of points per section
-tmaxs = 60*60*24*14; %14 days
+Ns = 16; %number of points per section
+tmax = 60*60*24*14; %14 days
 
-tspan = [];
-segment_duration = orbital_period / num_segments;
-total_segments = ceil(total_time / segment_duration);
-
-for segment = 1:total_segments
-    t_start = (segment - 1) * segment_duration;  % MATLAB is 1-based, so segment-1
-    t_end = min(t_start + segment_duration, total_time);  % Handle partial segment at end
-
-    segment_points = gaussLobattoPoints(n_points, t_start, t_end);
-
-    if segment == 1
-        % First segment: include all points
-        tspan = [tspan, segment_points];
-    else
-        % Subsequent segments: skip first point
-        tspan = [tspan, segment_points(2:end)];
-    end
-end
-
-path_to_csv = '../results/';
+path_to_csv = '../c++ codes/results/';
 %% create a vector struct of all satellites
-satsfilename = '../c++\ code/satellites.json';
-satellites = readstruct(satsfilename);
+satsfilename = '../c++ codes/satellites.json';
+jsonStr = fileread(satsfilename);
+satellites = jsondecode(jsonStr);
 fprintf("done\n")
 for i = 1:length(satellites)
-    satname = satellites(i).name;
+    satname = 'sat';%satellites(i).name;
     A = satellites(i).A*1e-6;
     m = satellites(i).m;
     r0 = satellites(i).r0;
@@ -55,10 +37,27 @@ for i = 1:length(satellites)
 
             %% Prepare time point list
 
-            [a,e,inc,O,w,f0] = kep_elements(r0,v0,mu); %transfer the r and v to
+            a = 1/(2/norm(r0)-norm(v0)^2/mu);
             %  keplerian elements
             Sec = 2*pi*sqrt((a^3)/mu)/delta; %These is the orbital period of the
             % satellite, devided by delta. It's the time of one section
+            tspan = [];
+            
+            total_segments = ceil(tmax / Sec);
+
+            for segment = 1:total_segments
+                t_start = (segment - 1) * Sec;  % MATLAB is 1-based, so segment-1
+                t_end = min(t_start + Sec, tmax);  % Handle partial segment at end
+
+                segment_points = 0.5*(t_end-t_start)*(-cos((0:(N-1))/(N-1))+1)+t_start;
+                if segment == 1
+                    % First segment: include all points
+                    tspan = [tspan, segment_points];
+                else
+                    % Subsequent segments: skip first point
+                    tspan = [tspan, segment_points(2:end)];
+                end
+            end
 
             %% Generate baseline
             fprintf("generating baseline...")
