@@ -67,27 +67,28 @@ for i = 1:length(satellites)
             
             fprintf("done!\n")
             %% load the relevant data from files:
-            rk4res = readmatrix([path_to_csv_file,satname,'_RK4_final_positions_',num2str(delta),'_',num2str(N),'.csv']);
-            rk8res = readmatrix([path_to_csv_file,satname,'_RK8_final_positions_',num2str(delta),'_',num2str(N),'.csv']);
-            ode45res = readmatrix([path_to_csv_file,satname,'_ODE45_final_positions_',num2str(delta),'_',num2str(N),'.csv']);
-            ode78res = readmatrix([path_to_csv_file,satname,'_ODE78_final_positions_',num2str(delta),'_',num2str(N),'.csv']);
-            ode113res = readmatrix([path_to_csv_file,satname,'_ODE113_final_positions_',num2str(delta),'_',num2str(N),'.csv']);
-            MPCIres = readmatrix([path_to_csv_file,satname,'_MPCI_final_positions_',num2str(delta),'_',num2str(N),'.csv']);
+            rk4res = readmatrix([path_to_csv,satname,'_RK4_final_positions_',num2str(delta),'_',num2str(N),'.csv']);
+            rk8res = readmatrix([path_to_csv,satname,'_RK8_final_positions_',num2str(delta),'_',num2str(N),'.csv']);
+            ode45res = readmatrix([path_to_csv,satname,'_ODE45_final_positions_',num2str(delta),'_',num2str(N),'.csv']);
+            ode78res = readmatrix([path_to_csv,satname,'_ODE78_final_positions_',num2str(delta),'_',num2str(N),'.csv']);
+            ode113res = readmatrix([path_to_csv,satname,'_ODE113_final_positions_',num2str(delta),'_',num2str(N),'.csv']);
+            MPCIres = readmatrix([path_to_csv,satname,'_MPCI_final_positions_',num2str(delta),'_',num2str(N),'.csv']);
+            %% compute errors
+            err4 = rbaseline(:,1:3) - rk4res(:,2:end);
+            err8 = rbaseline(:,1:3) - rk8res(:,2:end);
+            err45 = rbaseline(:,1:3) - ode45res(:,2:end);
+            err78 = rbaseline(:,1:3) - ode78res(:,2:end);
+            err113 = rbaseline(:,1:3) - ode113res(:,2:end);
+            errMPCI = rbaseline(:,1:3) - MPCIres(:,2:end);
             
-            err4 = rbaseline - rk4res(:,2:end);
-            err8 = rbaseline - rk8res(:,2:end);
-            err45 = rbaseline - ode45res(:,2:end);
-            err78 = rbaseline - ode78res(:,2:end);
-            err113 = rbaseline - ode113res(:,2:end);
-            errMPCI = rbaseline - MPCIres(:,2:end);
-
+            %% norms
             normr4 = sqrt(sum(err4(:,1:3).^2,2))';
             normr8 = sqrt(sum(err8(:,1:3).^2,2))';
             normr45 = sqrt(sum(err45(:,1:3).^2,2))';
             normr78 = sqrt(sum(err78(:,1:3).^2,2))';
             normr113 = sqrt(sum(err113(:,1:3).^2,2))';
             normrMPCI = sqrt(sum(errMPCI(:,1:3).^2,2))';
-
+            %%
             plot_tikz_figure(tspan,[normr4;normr8;normr45;normr78;normr113;normrMPCI],"../results/"+satname+"_J2_delta"+delta+"_N"+N)
 
             
