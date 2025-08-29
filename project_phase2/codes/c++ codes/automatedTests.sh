@@ -37,4 +37,9 @@ for ((i=0; i<$sat_count; i++)); do
             "$EXE" "$name" "$r0x" "$r0y" "$r0z" "$v0x" "$v0y" "$v0z" "$A" "$m" "$c_d" "$num_segments" "$num_points" "$TOTAL_TIME" "$ABS_TOL" "$REL_TOL"
         done
     done
+    
+    echo "Committing results for $name..."
+    git add results/*.csv
+    git commit -m "Add results for satellite: $name (segments: ${NUM_SEGMENTS_LIST[*]}, points: ${NUM_POINTS_LIST[*]})"
+    git push
 done

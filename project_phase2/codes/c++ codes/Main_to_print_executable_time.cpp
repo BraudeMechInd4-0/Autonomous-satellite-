@@ -238,7 +238,10 @@ int main(int argc, char *argv[])
     const double ATOL = 1e-12;
 
     // File to save execution times
-    std::ofstream exec_time_file("algorithm_execution_times.csv");
+    std::string exec_time_filename = "results/"+satellite_name + "_" + 
+                               std::to_string(num_segments) + "_" + 
+                               std::to_string(n_points) + "_execution_times.csv";
+    std::ofstream exec_time_file(exec_time_filename);
     if (!exec_time_file.is_open())
     {
         std::cerr << "Error: Could not open file to save execution times.\n";
