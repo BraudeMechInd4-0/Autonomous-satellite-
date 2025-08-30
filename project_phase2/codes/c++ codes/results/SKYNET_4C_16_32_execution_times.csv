@@ -1,4 +1,4 @@
-Algorithm,Execution Time (s)
+Algorithm,Tspan Generation (s),Integration Time (s),Total Time (s)
 RK4,0.00467591,0.635488,0.640164
 RK8,0.00467591,7.55079,7.55547
 ODE45,0.00467591,1.99574,2.00042
