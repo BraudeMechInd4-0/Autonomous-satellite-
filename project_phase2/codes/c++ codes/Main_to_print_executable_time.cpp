@@ -247,7 +247,7 @@ int main(int argc, char *argv[])
         std::cerr << "Error: Could not open file to save execution times.\n";
         return 1;
     }
-    exec_time_file << "Algorithm,Execution Time (s)\n";
+    exec_time_file << "Algorithm,Tspan Generation (s),Integration Time (s),Total Time (s)\n";
 
     // Generate the full Gauss-Lobatto time span
     auto tspan_start = std::chrono::high_resolution_clock::now();
